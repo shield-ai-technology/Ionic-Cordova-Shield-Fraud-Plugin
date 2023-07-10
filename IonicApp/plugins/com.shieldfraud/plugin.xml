@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android" id="com.shieldfraud" version="0.0.1">
+   <name>ShieldFraudPlugin</name>
+   <js-module name="ShieldFraudPlugin" src="www/ShieldFraudPlugin.js">
+      <clobbers target="ShieldFraudPlugin" />
+   </js-module>
+   <platform name="ios">
+      <podspec>
+         <config>
+            <source url="https://github.com/CocoaPods/Specs.git" />
+         </config>
+         <pods use-frameworks="true">
+            <pod name="ShieldFraud" spec="~> 1.5.22" />
+         </pods>
+      </podspec>
+      <config-file parent="/*" target="config.xml">
+         <feature name="ShieldFraudPlugin">
+            <param name="ios-package" value="ShieldFraudPlugin" />
+         </feature>
+      </config-file>
+      <source-file src="src/ios/ShieldFraudPlugin.swift" />
+   </platform>
+   <platform name="android">
+   <framework src="src/android/build.gradle" custom="true" type="gradleReference" />
+      <config-file parent="/*" target="res/xml/config.xml">
+         <feature name="ShieldFraudPlugin">
+            <param name="android-package" value="com.shieldfraud.ShieldFraudPlugin" />
+         </feature>
+      </config-file>
+      <config-file parent="/*" target="AndroidManifest.xml" />
+      <source-file src="src/android/ShieldFraudPlugin.java" target-dir="src/com/shieldfraud/ShieldFraudPlugin" />
+   </platform>
+</plugin>

@@ -1,0 +1,17 @@
+{
+  "name": "shield-fraud-plugin",
+  "version": "1.0.7",
+  "cordova": {
+    "id": "com.shieldfraud",
+    "platforms": [
+      "ios"
+    ]
+  },
+  "keywords": [
+    "ecosystem:cordova",
+    "cordova-ios"
+  ],
+  "author": "SHIELD",
+  "license": "ISC",
+  "description": "This is the Cordova plugin for iOS and Android SHIELDFRAUD SDK"
+}

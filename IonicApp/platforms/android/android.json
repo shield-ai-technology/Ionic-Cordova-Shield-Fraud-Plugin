@@ -1,0 +1,43 @@
+{
+  "prepare_queue": {
+    "installed": [],
+    "uninstalled": []
+  },
+  "config_munge": {
+    "files": {
+      "res/xml/config.xml": {
+        "parents": {
+          "/*": [
+            {
+              "xml": "<feature name=\"ShieldFraudPlugin\"><param name=\"android-package\" value=\"com.shieldfraud.ShieldFraudPlugin\" /></feature>",
+              "count": 1
+            }
+          ]
+        }
+      }
+    }
+  },
+  "installed_plugins": {
+    "cordova-plugin-add-swift-support": {
+      "PACKAGE_NAME": "com.ionicapp"
+    },
+    "com.shieldfraud": {
+      "PACKAGE_NAME": "com.ionicapp"
+    }
+  },
+  "dependent_plugins": {},
+  "modules": [
+    {
+      "id": "com.shieldfraud.ShieldFraudPlugin",
+      "file": "plugins/com.shieldfraud/www/ShieldFraudPlugin.js",
+      "pluginId": "com.shieldfraud",
+      "clobbers": [
+        "ShieldFraudPlugin"
+      ]
+    }
+  ],
+  "plugin_metadata": {
+    "cordova-plugin-add-swift-support": "2.0.2",
+    "com.shieldfraud": "0.0.1"
+  }
+}

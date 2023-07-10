@@ -1,0 +1,11 @@
+repositories {
+    google()
+    mavenCentral()
+    maven {
+         url "https://cashshield-sdk.s3.amazonaws.com/release/" 
+    }
+}
+
+dependencies {
+  implementation("com.shield.android:shield-fraud:1.6.+")
+}
