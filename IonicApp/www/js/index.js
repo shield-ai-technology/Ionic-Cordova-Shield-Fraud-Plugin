@@ -24,7 +24,7 @@ document.addEventListener('deviceready', onDeviceReady, false);
 function onDeviceReady() {
     // Cordova is now initialized. Have fun!
     
-    var config = {siteID: "dda05c5ddac400e1c133a360e2714aada4cda052", secretKey: "9ce44f88a25272b6d9cbb430ebbcfcf1"}
+    var config = {siteID: "SHIELD_SITE_ID", secretKey: "SHIELD_SECRET_KEY"}
     
     ShieldFraudPlugin.initShieldFraud(config, success, error);
 
