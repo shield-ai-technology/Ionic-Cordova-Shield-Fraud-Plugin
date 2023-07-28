@@ -4,5 +4,5 @@ platform :ios, '11.0'
 use_frameworks!
 target 'IonicApp' do
 	project 'IonicApp.xcodeproj'
-	pod 'ShieldFraud', '~> 1.5.22'
+	pod 'ShieldFraud', '~> 1.5.28'
 end

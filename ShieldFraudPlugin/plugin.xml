@@ -10,7 +10,7 @@
             <source url="https://github.com/CocoaPods/Specs.git" />
          </config>
          <pods use-frameworks="true">
-            <pod name="ShieldFraud" spec="~> 1.5.22" />
+            <pod name="ShieldFraud" spec="~> 1.5.28" />
          </pods>
       </podspec>
       <config-file parent="/*" target="config.xml">

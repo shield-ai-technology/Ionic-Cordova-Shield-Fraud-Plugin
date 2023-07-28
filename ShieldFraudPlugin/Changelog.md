@@ -1,5 +1,9 @@
 ### 1.0.7
 
+- Bump ios native sdk to 1.5.28
+
+### 1.0.7
+
 - Added callback support while detecting spoofer.
 
 ### 1.0.6

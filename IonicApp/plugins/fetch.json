@@ -10,7 +10,7 @@
   "com.shieldfraud": {
     "source": {
       "type": "registry",
-      "id": "file:../ShieldFraudPlugin"
+      "id": "../ShieldFraudPlugin"
     },
     "is_top_level": true,
     "variables": {}
