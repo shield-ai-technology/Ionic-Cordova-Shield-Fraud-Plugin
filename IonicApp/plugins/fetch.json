@@ -9,8 +9,8 @@
   },
   "com.shieldfraud": {
     "source": {
-      "type": "registry",
-      "id": "../ShieldFraudPlugin"
+      "type": "local",
+      "path": "/Users/akash/Documents/Ionic-Cordova-Shield-Fraud-Plugin/IonicApp/node_modules/shield-fraud-plugin"
     },
     "is_top_level": true,
     "variables": {}

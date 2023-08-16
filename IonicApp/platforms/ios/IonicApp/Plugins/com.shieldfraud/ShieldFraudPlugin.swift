@@ -18,7 +18,6 @@ import ShieldFraud
         }
         let config = Configuration(withSiteId: siteID, secretKey: key)
         config.deviceShieldCallback = self
-        config.debugKey = "88cbaf5a6ef0b74ccd7d6155bb42f03c282d0840"
         Shield.setUp(with: config)
         ShieldFraudPlugin.isShieldInitialized = true
     }

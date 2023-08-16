@@ -13,9 +13,9 @@
 		301BF552109A68D80062928A /* libCordova.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 301BF535109A57CC0062928A /* libCordova.a */; settings = {ATTRIBUTES = (Required, ); }; };
 		302D95F114D2391D003F00A1 /* MainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 302D95EF14D2391D003F00A1 /* MainViewController.m */; };
 		302D95F214D2391D003F00A1 /* MainViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 302D95F014D2391D003F00A1 /* MainViewController.xib */; };
-		39DE849E793C4EB48E7DA211 /* ShieldFraudPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C255431C4A5473DBE4FB09C /* ShieldFraudPlugin.swift */; };
-		6695B8D1D59A18A82ABBD669 /* Pods_IonicApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA95D703300037031D10FB10 /* Pods_IonicApp.framework */; };
 		6AFF5BF91D6E424B00AB3073 /* CDVLaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6AFF5BF81D6E424B00AB3073 /* CDVLaunchScreen.storyboard */; };
+		73DDCF7B70714E0FB35081D6 /* ShieldFraudPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52B9E13F64E44202ACA85E20 /* ShieldFraudPlugin.swift */; };
+		DDBD93E599A19B93D9120776 /* Pods_IonicApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 153169C65B34CC3C28677FFC /* Pods_IonicApp.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -45,6 +45,7 @@
 /* Begin PBXFileReference section */
 		0207DA571B56EA530066E2B4 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = IonicApp/Images.xcassets; sourceTree = SOURCE_ROOT; };
 		0E1A1FC86C9A1A5F96FEEC13 /* Pods-IonicApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-IonicApp.release.xcconfig"; path = "Target Support Files/Pods-IonicApp/Pods-IonicApp.release.xcconfig"; sourceTree = "<group>"; };
+		153169C65B34CC3C28677FFC /* Pods_IonicApp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_IonicApp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1D3623240D0F684500981E51 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		1D3623250D0F684500981E51 /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		1D6058910D05DD3D006BFB54 /* IonicApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = IonicApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -58,11 +59,10 @@
 		3047A5101AB8059700498E2A /* build-release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "build-release.xcconfig"; path = "cordova/build-release.xcconfig"; sourceTree = SOURCE_ROOT; };
 		3047A5111AB8059700498E2A /* build.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = build.xcconfig; path = cordova/build.xcconfig; sourceTree = SOURCE_ROOT; };
 		32CA4F630368D1EE00C91783 /* IonicApp-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "IonicApp-Prefix.pch"; sourceTree = "<group>"; };
+		52B9E13F64E44202ACA85E20 /* ShieldFraudPlugin.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = ShieldFraudPlugin.swift; path = com.shieldfraud/ShieldFraudPlugin.swift; sourceTree = "<group>"; };
 		6495A7C075D186D1FF42336F /* Pods-IonicApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-IonicApp.debug.xcconfig"; path = "Target Support Files/Pods-IonicApp/Pods-IonicApp.debug.xcconfig"; sourceTree = "<group>"; };
 		6AFF5BF81D6E424B00AB3073 /* CDVLaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = CDVLaunchScreen.storyboard; path = IonicApp/CDVLaunchScreen.storyboard; sourceTree = SOURCE_ROOT; };
-		8C255431C4A5473DBE4FB09C /* ShieldFraudPlugin.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = ShieldFraudPlugin.swift; path = com.shieldfraud/ShieldFraudPlugin.swift; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* IonicApp-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "IonicApp-Info.plist"; path = "IonicApp/IonicApp-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = SOURCE_ROOT; };
-		AA95D703300037031D10FB10 /* Pods_IonicApp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_IonicApp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		EB87FDF31871DA8E0020F90C /* www */ = {isa = PBXFileReference; lastKnownFileType = folder; name = www; path = ../../www; sourceTree = "<group>"; };
 		EB87FDF41871DAF40020F90C /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = config.xml; path = ../../config.xml; sourceTree = "<group>"; };
 		ED33DF2A687741AEAF9F8254 /* Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = "<group>"; };
@@ -75,7 +75,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				301BF552109A68D80062928A /* libCordova.a in Frameworks */,
-				6695B8D1D59A18A82ABBD669 /* Pods_IonicApp.framework in Frameworks */,
+				DDBD93E599A19B93D9120776 /* Pods_IonicApp.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -147,7 +147,7 @@
 		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				AA95D703300037031D10FB10 /* Pods_IonicApp.framework */,
+				153169C65B34CC3C28677FFC /* Pods_IonicApp.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -174,7 +174,7 @@
 		307C750510C5A3420062BCA9 /* Plugins */ = {
 			isa = PBXGroup;
 			children = (
-				8C255431C4A5473DBE4FB09C /* ShieldFraudPlugin.swift */,
+				52B9E13F64E44202ACA85E20 /* ShieldFraudPlugin.swift */,
 			);
 			name = Plugins;
 			path = IonicApp/Plugins;
@@ -210,7 +210,7 @@
 				1D60588D0D05DD3D006BFB54 /* Resources */,
 				1D60588E0D05DD3D006BFB54 /* Sources */,
 				1D60588F0D05DD3D006BFB54 /* Frameworks */,
-				7535861A095B2FEB18E75D22 /* [CP] Embed Pods Frameworks */,
+				3F248ECFF2679DF2735AF478 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -305,7 +305,7 @@
 			shellScript = "\"$SRCROOT/IonicApp/Scripts/copy-www-build-step.sh\"";
 			showEnvVarsInLog = 0;
 		};
-		7535861A095B2FEB18E75D22 /* [CP] Embed Pods Frameworks */ = {
+		3F248ECFF2679DF2735AF478 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -354,7 +354,7 @@
 				1D60589B0D05DD56006BFB54 /* main.m in Sources */,
 				1D3623260D0F684500981E51 /* AppDelegate.m in Sources */,
 				302D95F114D2391D003F00A1 /* MainViewController.m in Sources */,
-				39DE849E793C4EB48E7DA211 /* ShieldFraudPlugin.swift in Sources */,
+				73DDCF7B70714E0FB35081D6 /* ShieldFraudPlugin.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

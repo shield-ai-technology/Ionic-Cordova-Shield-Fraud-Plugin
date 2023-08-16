@@ -14,11 +14,11 @@
 		</data>
 		<key>Info.plist</key>
 		<data>
-		HzbaNHTNZsNVxu94f+HswyBfp84=
+		+aPBYiS5aBBsnm4KfI54OeurFz8=
 		</data>
 		<key>Modules/ShieldFraud.swiftmodule/arm64-apple-ios.abi.json</key>
 		<data>
-		FcCOCcGtAKOINU6Tzb6RCm77Ct0=
+		UKcIdoSl4NFAXgA7UNYr/80kyyQ=
 		</data>
 		<key>Modules/ShieldFraud.swiftmodule/arm64-apple-ios.private.swiftinterface</key>
 		<data>
@@ -34,7 +34,7 @@
 		</data>
 		<key>Modules/ShieldFraud.swiftmodule/arm64-apple-ios.swiftmodule</key>
 		<data>
-		C33DmEt6t2mCkLppOcCM3JNj0fA=
+		GuEZVBWfMF04ya1B8v9UUYFcims=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
@@ -69,11 +69,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			FcCOCcGtAKOINU6Tzb6RCm77Ct0=
+			UKcIdoSl4NFAXgA7UNYr/80kyyQ=
 			</data>
 			<key>hash2</key>
 			<data>
-			oeJX+N3ZxIwQo5ZtqAXdQzYhvgUCVooIgYekJ6Y1yZQ=
+			17A5pIo6Es2OFCyfPfCxCWdOxPmpK8+Qkoprmu/qURY=
 			</data>
 		</dict>
 		<key>Modules/ShieldFraud.swiftmodule/arm64-apple-ios.private.swiftinterface</key>
@@ -113,11 +113,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			C33DmEt6t2mCkLppOcCM3JNj0fA=
+			GuEZVBWfMF04ya1B8v9UUYFcims=
 			</data>
 			<key>hash2</key>
 			<data>
-			COEmUVbpzZrc9tTezbfd/Z2/0mdmjiMO13d3Mu4b3iw=
+			qBqScYfQuzC0rlEpMN6cGTHM+YO8rmF9FE9KcO/kGbY=
 			</data>
 		</dict>
 		<key>Modules/module.modulemap</key>
