@@ -1,0 +1,34 @@
+{
+  "name": "shield-fraud-plugin",
+  "displayName": "ShieldFraudPlugin",
+  "version": "1.0.10",
+  "main": "ShieldFraudPlugin.js",
+  "cordova": {
+    "id": "shield-fraud-plugin",
+    "platforms": [
+      "ios",
+      "android"
+    ]
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "ecosystem:cordova",
+    "ios",
+    "android",
+    "shieldfraud",
+    "device-intelligence",
+    "mobile-fingerprint"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shield-ai-technology/Ionic-Cordova-Shield-Fraud-Plugin.git"
+  },
+  "bugs": {
+    "url": "https://github.com/shield-ai-technology/Ionic-Cordova-Shield-Fraud-Plugin/issues"
+  },
+  "author": "SHIELD",
+  "license": "MIT",
+  "description": "This is the Cordova plugin for iOS and Android SHIELDFRAUD SDK"
+}
