@@ -9,7 +9,7 @@ var ShieldFraudPlugin = {
         exec(success, error, PLUGIN_NAME, "initShieldFraud", [config.siteID, config.secretKey]);
     },
 
-    getSessionID: function(arg0, success, error) {
+    getSessionID: function(success, error) {
         exec(success, error, PLUGIN_NAME, "getSessionID", []);
     },
       
@@ -18,10 +18,14 @@ var ShieldFraudPlugin = {
     },
       
     sendAttributes: function(screen, data, success, error) {
+        success = success || function() {};
+        error = error || function() {};
         exec(success, error, PLUGIN_NAME, "sendAttributes", [screen, data]);
     },
       
     sendDeviceSignature: function(arg0, success, error) {
+        success = success || function() {};
+        error = error || function() {};
         exec(success, error, PLUGIN_NAME, "sendDeviceSignature", [arg0]);
     },
       
