@@ -18,11 +18,9 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Iterator;
 
-/**
- * This class echoes a string called from JavaScript.
- */
 public class ShieldFraudPlugin extends CordovaPlugin {
-    static boolean isShieldInitialized = false;
+
+    private static boolean isShieldInitialized = false;
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
@@ -36,11 +34,11 @@ public class ShieldFraudPlugin extends CordovaPlugin {
             getDeviceResult(callbackContext);
             return true;
         } else if (action.equals("sendAttributes")) {
-            sendAttributes(callbackContext,args);
+            sendAttributes(callbackContext, args);
             return true;
         } else if (action.equals("sendDeviceSignature")) {
             String screenName = args.getString(0);
-            sendDeviceSignature(callbackContext,screenName);
+            sendDeviceSignature(callbackContext, screenName);
             return true;
         } else if (action.equals("isShieldInitialized")) {
             isShieldInitialized(callbackContext);
@@ -49,32 +47,62 @@ public class ShieldFraudPlugin extends CordovaPlugin {
         return false;
     }
 
-    private void isShieldInitialized(CallbackContext callbackContext) {
-        try {
-            callbackContext.success(String.valueOf(ShieldFraudPlugin.isShieldInitialized));
-        } catch (IllegalStateException exception) {
-            callbackContext.error(String.valueOf(false));
-        }
-    }
-
     private void initShieldFraud(CallbackContext callbackContext, JSONArray args) throws JSONException {
-        if (args == null || ShieldFraudPlugin.isShieldInitialized) {
+        if (ShieldFraudPlugin.isShieldInitialized) {
             return;
         }
-        String siteID = args.optString(0);
-        String key = args.optString(1);
+        if (args == null) {
+            callbackContext.error("Invalid arguments");
+            return;
+        }
+        JSONObject payload = args.optJSONObject(0);
+        if (payload == null) {
+            callbackContext.error("Invalid arguments");
+            return;
+        }
 
-        Shield shield = new Shield.Builder(cordova.getActivity(), siteID, key).registerDeviceShieldCallback(new ShieldCallback<JSONObject>() {
+        String siteID = payload.optString("siteID");
+        String key    = payload.optString("secretKey");
+
+        int envValue = payload.optInt("environment", 0);
+        String environment;
+        switch (envValue) {
+            case 1:  environment = Shield.ENVIRONMENT_DEV;     break;
+            case 2:  environment = Shield.ENVIRONMENT_STAGING; break;
+            default: environment = Shield.ENVIRONMENT_PROD;    break;
+        }
+
+        // JS LogLevel: NONE=0, INFO=1, DEBUG=2, VERBOSE=3
+        int logValue = payload.optInt("logLevel", 0);
+        Shield.LogLevel logLevel;
+        switch (logValue) {
+            case 1:  logLevel = Shield.LogLevel.INFO;    break;
+            case 2:  logLevel = Shield.LogLevel.DEBUG;   break;
+            case 3:  logLevel = Shield.LogLevel.VERBOSE; break;
+            default: logLevel = Shield.LogLevel.NONE;    break;
+        }
+
+        Shield.Builder builder = new Shield.Builder(cordova.getActivity(), siteID, key)
+                .setEnvironment(environment)
+                .setLogLevel(logLevel);
+
+        JSONObject dialogArg = payload.optJSONObject("blockedDialog");
+        if (dialogArg != null) {
+            String dialogTitle = dialogArg.optString("title", "");
+            String dialogBody  = dialogArg.optString("body", "");
+            builder.setAutoBlockDialog(new BlockedDialog(dialogTitle, dialogBody));
+        }
+
+        Shield shield = builder.registerDeviceShieldCallback(new ShieldCallback<JSONObject>() {
             @Override
             public void onSuccess(@Nullable JSONObject jsonObject) {
-                PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, jsonObject.toString());
+                PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, jsonObject != null ? jsonObject.toString() : "{}");
                 pluginResult.setKeepCallback(true);
                 callbackContext.sendPluginResult(pluginResult);
             }
             @Override
             public void onFailure(@Nullable ShieldException e) {
-                PluginResult pluginResult = new PluginResult(PluginResult.Status.ERROR, e.message);
-                pluginResult.setKeepCallback(true);
+                PluginResult pluginResult = new PluginResult(PluginResult.Status.ERROR, e != null ? e.message : "Unknown error");
                 callbackContext.sendPluginResult(pluginResult);
             }
         }).build();
@@ -83,12 +111,16 @@ public class ShieldFraudPlugin extends CordovaPlugin {
         ShieldFraudPlugin.isShieldInitialized = true;
     }
 
+    private void isShieldInitialized(CallbackContext callbackContext) {
+        callbackContext.success(ShieldFraudPlugin.isShieldInitialized ? 1 : 0);
+    }
+
     private void getSessionId(CallbackContext callbackContext) {
         try {
             String sessionId = Shield.getInstance().getSessionId();
             callbackContext.success(sessionId);
         } catch (IllegalStateException e) {
-            callbackContext.error(e.toString());
+            callbackContext.error(e.getMessage());
         }
     }
 
@@ -97,21 +129,23 @@ public class ShieldFraudPlugin extends CordovaPlugin {
             JSONObject result = Shield.getInstance().getLatestDeviceResult();
             if (result != null) {
                 callbackContext.success(result.toString());
+            } else {
+                callbackContext.error("No device result available");
             }
         } catch (IllegalStateException e) {
-            callbackContext.error(e.toString());
+            callbackContext.error(e.getMessage());
         }
     }
 
-
     private void sendAttributes(CallbackContext callbackContext, JSONArray args) {
+        if (args == null) {
+            callbackContext.error("Invalid arguments");
+            return;
+        }
         try {
-            if (args == null) {
-                return;
-            }
             String screenName = args.optString(0);
             JSONObject object = args.getJSONObject(1);
-            HashMap<String,String> data = jsonObjectToHashMap(object);
+            HashMap<String, String> data = jsonObjectToHashMap(object);
             Shield.getInstance().sendAttributes(screenName, data, new ShieldCallback<Boolean>() {
                 @Override
                 public void onSuccess(@Nullable Boolean aBoolean) {
@@ -119,12 +153,11 @@ public class ShieldFraudPlugin extends CordovaPlugin {
                 }
                 @Override
                 public void onFailure(@Nullable ShieldException e) {
-                    callbackContext.error(e.message);
+                    callbackContext.error(e != null ? e.message : "Unknown error");
                 }
             });
         } catch (JSONException e) {
-            e.printStackTrace();
-            callbackContext.error(e.toString());
+            callbackContext.error(e.getMessage());
         }
     }
 
@@ -141,7 +174,7 @@ public class ShieldFraudPlugin extends CordovaPlugin {
         HashMap<String, String> hashMap = new HashMap<>();
         Iterator<String> iterator = jsonObject.keys();
         while (iterator.hasNext()) {
-            String key = iterator.next();
+            String key   = iterator.next();
             String value = jsonObject.getString(key);
             hashMap.put(key, value);
         }
