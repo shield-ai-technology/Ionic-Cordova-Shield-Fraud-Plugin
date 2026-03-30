@@ -32,6 +32,28 @@ npx cap sync
 
 You can refer to the Changelog to see more details about our updates.
 
+### Android
+
+This plugin now integrates SHIELD Android SDK `2.4.0`.
+
+For Cordova Android projects, the plugin declares the SHIELD Maven repository directly from its Android Gradle integration:
+
+```
+https://cashshield-sdk.s3.amazonaws.com/release/
+```
+
+Android-specific init option:
+
+```
+{
+  siteID: "SHIELD_SITE_ID",
+  secretKey: "SHIELD_SECRET_KEY",
+  blockScreenRecording: true
+}
+```
+
+If you pass listener callbacks to `initShieldFraud(...)`, Android initializes with `createShieldWithCallback(...)`. If you call `initShieldFraud(...)` without listener callbacks, Android initializes with `createShield(...)`. Cross-platform metadata is set automatically before initialization.
+
 ### Initialize the SDK
 
 The SDK initialization should be configured at the earliest of the App Lifecycle to ensure successful generation and processing of the device fingerprint. SDK is to be initialised only once and will throw an exception if it is initialised more than once.
@@ -133,23 +155,20 @@ Our SDK will capture an initial device fingerprint upon SDK initialization and r
 
 You can register a callback if you would like to be notified in the event that the device attributes change during the session (for example, a user activates a malicious tool a moment after launching the page).
 
-Add an additional parameter during intialization in order to register a callback. 
+Pass a callbacks object during initialization in order to register device-result listener callbacks.
 
 For example - 
  ```
- var config = {siteID: "SHIELD_SITE_ID", secretKey: "SHIELD_SECRET_KEY"}
-    
-ShieldFraudPlugin.initShieldFraud(config, onSuccess, onFailure);
+ var config = {siteID: "SHIELD_SITE_ID", secretKey: "SHIELD_SECRET_KEY"};
 
-function onSuccess(message) {
-    // Handle success event here
-    console.log("Shield Callback Success:", message);
-}
-
-function onFailure(error) {
-    // Handle failure event here
-    console.log("Shield Callback Error:", error);
-}
+ShieldFraudPlugin.initShieldFraud(config, {
+    onSuccess: function(message) {
+        console.log("Shield Callback Success:", message);
+    },
+    onFailure: function(error) {
+        console.log("Shield Callback Error:", error);
+    }
+});
  ```
 
 #### Retrieve device results via Customized Pull

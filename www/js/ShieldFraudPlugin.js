@@ -1,11 +1,14 @@
 var exec = require('cordova/exec');
 
 var PLUGIN_NAME = "ShieldFraudPlugin";
+var CROSS_PLATFORM_NAME = "ionic-shield-fraud-plugin";
+var CROSS_PLATFORM_VERSION = "2.0.0";
 
 var Environment = {
     PROD: 0,
     DEV:  1,
-    STAG: 2
+    STAG: 2,
+    STAGING: 2
 };
 
 var LogLevel = {
@@ -15,52 +18,116 @@ var LogLevel = {
     VERBOSE: 3
 };
 
+function noop() {}
+
+function normalizeResult(value) {
+    if (typeof value !== "string") {
+        return value;
+    }
+
+    try {
+        return JSON.parse(value);
+    } catch (error) {
+        return value;
+    }
+}
+
+function normalizeSuccessCallback(callback) {
+    callback = callback || noop;
+    return function(result) {
+        callback(normalizeResult(result));
+    };
+}
+
+function extractListenerCallbacks(callbacks, legacyErrorCallback) {
+    if (callbacks && typeof callbacks === "object" && !Array.isArray(callbacks)) {
+        return {
+            onSuccess: typeof callbacks.onSuccess === "function" ? callbacks.onSuccess : noop,
+            onFailure: typeof callbacks.onFailure === "function" ? callbacks.onFailure : noop
+        };
+    }
+
+    if (typeof callbacks === "function" || typeof legacyErrorCallback === "function") {
+        return {
+            onSuccess: typeof callbacks === "function" ? callbacks : noop,
+            onFailure: typeof legacyErrorCallback === "function" ? legacyErrorCallback : noop
+        };
+    }
+
+    return null;
+}
+
+function setCrossPlatformParametersInternal(success, error) {
+    exec(success || noop, error || noop, PLUGIN_NAME, "setCrossPlatformParameters", [
+        CROSS_PLATFORM_NAME,
+        CROSS_PLATFORM_VERSION
+    ]);
+}
+
 var ShieldFraudPlugin = {
-    initShieldFraud: function(config, success, error) {
-        success = success || function() {};
-        error   = error   || function() {};
+    initShieldFraud: function(config, callbacks, legacyErrorCallback) {
+        config  = config || {};
         if (!config || !config.siteID || !config.secretKey) {
-            error("siteID and secretKey are required");
+            var invalidConfigCallbacks = extractListenerCallbacks(callbacks, legacyErrorCallback);
+            (invalidConfigCallbacks ? invalidConfigCallbacks.onFailure : noop)("siteID and secretKey are required");
             return;
         }
+
+        var listenerCallbacks = extractListenerCallbacks(callbacks, legacyErrorCallback);
+        var enableDeviceResultListener = !!listenerCallbacks;
+
         var payload = {
             siteID:        config.siteID,
             secretKey:     config.secretKey,
             environment:   (config.environment   !== undefined) ? config.environment   : Environment.PROD,
             logLevel:      (config.logLevel      !== undefined) ? config.logLevel      : LogLevel.NONE,
-            blockedDialog: (config.blockedDialog !== undefined) ? config.blockedDialog : null
+            blockedDialog: (config.blockedDialog !== undefined) ? config.blockedDialog : null,
+            blockScreenRecording: !!config.blockScreenRecording,
+            enableDeviceResultListener: enableDeviceResultListener
         };
-        exec(success, error, PLUGIN_NAME, "initShieldFraud", [payload]);
+
+        setCrossPlatformParametersInternal(
+            function() {
+                exec(
+                    enableDeviceResultListener ? normalizeSuccessCallback(listenerCallbacks.onSuccess) : noop,
+                    enableDeviceResultListener ? listenerCallbacks.onFailure : noop,
+                    PLUGIN_NAME,
+                    "initShieldFraud",
+                    [payload]
+                );
+            },
+            function() {
+                exec(
+                    enableDeviceResultListener ? normalizeSuccessCallback(listenerCallbacks.onSuccess) : noop,
+                    enableDeviceResultListener ? listenerCallbacks.onFailure : noop,
+                    PLUGIN_NAME,
+                    "initShieldFraud",
+                    [payload]
+                );
+            }
+        );
     },
 
     getSessionID: function(success, error) {
-        success = success || function() {};
-        error   = error   || function() {};
+        success = success || noop;
+        error   = error || noop;
         exec(success, error, PLUGIN_NAME, "getSessionID", []);
     },
 
     getDeviceResult: function(success, error) {
-        success = success || function() {};
-        error   = error   || function() {};
-        exec(success, error, PLUGIN_NAME, "getDeviceResult", []);
+        exec(normalizeSuccessCallback(success), error || noop, PLUGIN_NAME, "getDeviceResult", []);
     },
 
     sendAttributes: function(screenName, data, success, error) {
-        success = success || function() {};
-        error   = error   || function() {};
-        exec(success, error, PLUGIN_NAME, "sendAttributes", [screenName, data]);
+        exec(success || noop, error || noop, PLUGIN_NAME, "sendAttributes", [screenName, data]);
     },
 
     sendDeviceSignature: function(screenName, success, error) {
-        success = success || function() {};
-        error   = error   || function() {};
-        exec(success, error, PLUGIN_NAME, "sendDeviceSignature", [screenName]);
+        exec(normalizeSuccessCallback(success), error || noop, PLUGIN_NAME, "sendDeviceSignature", [screenName]);
     },
 
     isShieldInitialized: function(success, error) {
-        success = success || function() {};
-        error   = error   || function() {};
-        exec(success, error, PLUGIN_NAME, "isShieldInitialized", []);
+        exec(success || noop, error || noop, PLUGIN_NAME, "isShieldInitialized", []);
     }
 };
 
