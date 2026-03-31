@@ -1,11 +1,19 @@
-repositories {
-    google()
-    mavenCentral()
+def shieldFraudMavenUrl = "https://cashshield-sdk.s3.amazonaws.com/release/"
+
+rootProject.allprojects {
+  repositories {
     maven {
-         url "https://cashshield-sdk.s3.amazonaws.com/release/" 
+      url shieldFraudMavenUrl
     }
+  }
+}
+
+repositories {
+  maven {
+    url shieldFraudMavenUrl
+  }
 }
 
 dependencies {
-  implementation("com.shield.android:shield-fraud:1.6.+")
+  implementation("com.shield.android:shield-fraud:2.4.0")
 }
