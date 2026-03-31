@@ -57,13 +57,6 @@ function extractListenerCallbacks(callbacks, legacyErrorCallback) {
     return null;
 }
 
-function setCrossPlatformParametersInternal(success, error) {
-    exec(success || noop, error || noop, PLUGIN_NAME, "setCrossPlatformParameters", [
-        CROSS_PLATFORM_NAME,
-        CROSS_PLATFORM_VERSION
-    ]);
-}
-
 var ShieldFraudPlugin = {
     initShieldFraud: function(config, callbacks, legacyErrorCallback) {
         config  = config || {};
@@ -83,28 +76,17 @@ var ShieldFraudPlugin = {
             logLevel:      (config.logLevel      !== undefined) ? config.logLevel      : LogLevel.NONE,
             blockedDialog: (config.blockedDialog !== undefined) ? config.blockedDialog : null,
             blockScreenRecording: !!config.blockScreenRecording,
-            enableDeviceResultListener: enableDeviceResultListener
+            enableDeviceResultListener: enableDeviceResultListener,
+            crossPlatformName: CROSS_PLATFORM_NAME,
+            crossPlatformVersion: CROSS_PLATFORM_VERSION
         };
 
-        setCrossPlatformParametersInternal(
-            function() {
-                exec(
-                    enableDeviceResultListener ? normalizeSuccessCallback(listenerCallbacks.onSuccess) : noop,
-                    enableDeviceResultListener ? listenerCallbacks.onFailure : noop,
-                    PLUGIN_NAME,
-                    "initShieldFraud",
-                    [payload]
-                );
-            },
-            function() {
-                exec(
-                    enableDeviceResultListener ? normalizeSuccessCallback(listenerCallbacks.onSuccess) : noop,
-                    enableDeviceResultListener ? listenerCallbacks.onFailure : noop,
-                    PLUGIN_NAME,
-                    "initShieldFraud",
-                    [payload]
-                );
-            }
+        exec(
+            enableDeviceResultListener ? normalizeSuccessCallback(listenerCallbacks.onSuccess) : noop,
+            enableDeviceResultListener ? listenerCallbacks.onFailure : noop,
+            PLUGIN_NAME,
+            "initShieldFraud",
+            [payload]
         );
     },
 

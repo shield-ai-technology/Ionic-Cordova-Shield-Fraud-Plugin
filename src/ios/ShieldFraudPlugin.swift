@@ -41,6 +41,14 @@ import ShieldFraud
         default: logLevel = .none
         }
 
+        if let crossPlatformName = payload["crossPlatformName"] as? String,
+           let crossPlatformVersion = payload["crossPlatformVersion"] as? String,
+           !crossPlatformName.isEmpty,
+           !crossPlatformVersion.isEmpty {
+            let params = ShieldCrossPlatformParams(name: crossPlatformName, version: crossPlatformVersion)
+            ShieldCrossPlatformHelper.setCrossPlatformParameters(params)
+        }
+
         let config = Configuration(withSiteId: siteID, secretKey: key)
         config.environment = environment
         config.logLevel    = logLevel
@@ -55,22 +63,6 @@ import ShieldFraud
         }
         Shield.setUp(with: config)
         ShieldFraudPlugin.isShieldInitialized = true
-    }
-
-    @objc(setCrossPlatformParameters:) func setCrossPlatformParameters(command: CDVInvokedUrlCommand) {
-        guard let name = command.arguments[0] as? String,
-              let version = command.arguments[1] as? String,
-              !name.isEmpty,
-              !version.isEmpty else {
-            let pluginResult = CDVPluginResult(status: .error, messageAs: "name and version are required")
-            self.sendPluginResult(pluginResult, callbackId: command.callbackId)
-            return
-        }
-
-        let params = ShieldCrossPlatformParams(name: name, version: version)
-        ShieldCrossPlatformHelper.setCrossPlatformParameters(params)
-        let pluginResult = CDVPluginResult(status: .ok, messageAs: true)
-        self.sendPluginResult(pluginResult, callbackId: command.callbackId)
     }
 
     @objc(getSessionID:) func getSessionID(command: CDVInvokedUrlCommand) {

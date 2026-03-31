@@ -56,9 +56,6 @@ public class ShieldFraudPlugin extends CordovaPlugin {
         } else if (action.equals("isShieldInitialized")) {
             isShieldInitialized(callbackContext);
             return true;
-        } else if (action.equals("setCrossPlatformParameters")) {
-            setCrossPlatformParameters(callbackContext, args);
-            return true;
         }
         return false;
     }
@@ -92,6 +89,14 @@ public class ShieldFraudPlugin extends CordovaPlugin {
         shieldConfig.setEnvironment(parseEnvironment(payload.optInt("environment", 0)));
         shieldConfig.setLogLevel(parseLogLevel(payload.optInt("logLevel", 0)));
         shieldConfig.setBlockScreenRecording(payload.optBoolean("blockScreenRecording", false));
+
+        String crossPlatformName = payload.optString("crossPlatformName", "").trim();
+        String crossPlatformVersion = payload.optString("crossPlatformVersion", "").trim();
+        if (!crossPlatformName.isEmpty() && !crossPlatformVersion.isEmpty()) {
+            ShieldCrossPlatformHelper.setCrossPlatformParameters(
+                    new ShieldCrossPlatformParams(crossPlatformName, crossPlatformVersion)
+            );
+        }
 
         JSONObject dialogArg = payload.optJSONObject("blockedDialog");
         if (dialogArg != null) {
@@ -150,28 +155,6 @@ public class ShieldFraudPlugin extends CordovaPlugin {
 
     private void isShieldInitialized(CallbackContext callbackContext) {
         runOnMainThread(() -> callbackContext.success(ShieldFraudPlugin.shieldInstance != null ? 1 : 0));
-    }
-
-    private void setCrossPlatformParameters(CallbackContext callbackContext, JSONArray args) {
-        if (args == null) {
-            runOnMainThread(() -> callbackContext.error("Invalid arguments"));
-            return;
-        }
-
-        String name = args.optString(0, "").trim();
-        String version = args.optString(1, "").trim();
-
-        if (name.isEmpty() || version.isEmpty()) {
-            runOnMainThread(() -> callbackContext.error("name and version are required"));
-            return;
-        }
-
-        try {
-            ShieldCrossPlatformHelper.setCrossPlatformParameters(new ShieldCrossPlatformParams(name, version));
-            runOnMainThread(() -> callbackContext.success());
-        } catch (Throwable throwable) {
-            runOnMainThread(() -> callbackContext.error(throwable.getMessage() != null ? throwable.getMessage() : "Failed to set cross platform parameters"));
-        }
     }
 
     private void getSessionId(CallbackContext callbackContext) {
