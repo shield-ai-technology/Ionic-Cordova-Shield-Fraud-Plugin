@@ -4,21 +4,19 @@ Cordova Plugin for Shield Fraud (www.shield.com)
 
 Cordova Shield Fraud Plugin helps developers to assess malicious activities performed on mobile devices and return risk intelligence based on user's behaviour. It collects device's fingerprint, social metrics and network information. 
 
-There are seven steps to getting started with the SHIELD SDK:
+There are six steps to getting started with the SHIELD SDK:
 
 1. [Integrate the SDK](#integrate-the-sdk)
 
 2. [Initialize the SDK](#initialize-the-sdk)
 
-3. [Check Initialization Status](#check-initialization-status)
+3. [Get Session ID](#get-session-id)
 
-4. [Get Session ID](#get-session-id)
+4. [Get Device Results](#get-device-results)
 
-5. [Get Device Results](#get-device-results)
+5. [Send Custom Attributes](#send-custom-attributes)
 
-6. [Send Custom Attributes](#send-custom-attributes)
-
-7. [Send Device Signature](#send-device-signature)
+6. [Send Device Signature](#send-device-signature)
 
 
 ### Integrate the SDK
@@ -36,28 +34,6 @@ npx cap sync
 
 You can refer to the Changelog to see more details about our updates.
 
-### Android
-
-This plugin now integrates SHIELD Android SDK `2.4.0`.
-
-For Cordova Android projects, the plugin declares the SHIELD Maven repository directly from its Android Gradle integration:
-
-```
-https://cashshield-sdk.s3.amazonaws.com/release/
-```
-
-Android-specific init option:
-
-```
-{
-  siteID: "SHIELD_SITE_ID",
-  secretKey: "SHIELD_SECRET_KEY",
-  blockScreenRecording: true
-}
-```
-
-Public init change for Android: `blockScreenRecording` is supported as an optional config field.
-
 ### Initialize the SDK
 
 The SDK must be initialized only once during app launch to enable successful device fingerprint generation and processing. This should be done at the earliest possible point in the app lifecycle.
@@ -65,20 +41,6 @@ The SDK must be initialized only once during app launch to enable successful dev
 To initialize the SDK, you will need your `SHIELD_SITE_ID` and `SHIELD_SECRET_KEY`.
 
 Initializing the SDK more than once will result in an exception.
-
-You can also pass optional public config fields during initialization:
-
-```
-{
-  environment: ShieldFraudPlugin.Environment.PROD,
-  logLevel: ShieldFraudPlugin.LogLevel.NONE,
-  blockedDialog: {
-    title: "Access blocked",
-    body: "This action is unavailable on this device."
-  },
-  blockScreenRecording: true
-}
-```
 
 #### Ionic + Capacitor (Angular)
 
@@ -97,7 +59,8 @@ export class HomePage {
   constructor() {
     var config = {
       siteID: "SHIELD_SITE_ID",
-      secretKey: "SHIELD_SECRET_KEY"
+      secretKey: "SHIELD_SECRET_KEY",
+      environment: ShieldFraudPlugin.Environment.PROD
     };
 
     ShieldFraudPlugin.initShieldFraud(config);
@@ -116,7 +79,8 @@ declare var ShieldFraudPlugin: any;
 
 const config = {
   siteID: "SHIELD_SITE_ID",
-  secretKey: "SHIELD_SECRET_KEY"
+  secretKey: "SHIELD_SECRET_KEY",
+  environment: ShieldFraudPlugin.Environment.PROD
 };
 
 const App: React.FC = () => {
@@ -142,11 +106,23 @@ router.isReady().then(() => {
 
   const config = {
     siteID: "SHIELD_SITE_ID",
-    secretKey: "SHIELD_SECRET_KEY"
+    secretKey: "SHIELD_SECRET_KEY",
+    environment: ShieldFraudPlugin.Environment.PROD
   };
 
   ShieldFraudPlugin.initShieldFraud(config);
 });
+```
+
+You can also add the following optional fields in the `initShieldFraud` config:
+
+```
+logLevel: ShieldFraudPlugin.LogLevel.NONE
+blockedDialog: {
+  title: "Access blocked",
+  body: "This action is unavailable on this device."
+}
+blockScreenRecording: true
 ```
 
 ### Check Initialization Status
@@ -202,7 +178,8 @@ Pass an additional callbacks object during initialization in order to register l
 ```
 var config = {
   siteID: "SHIELD_SITE_ID",
-  secretKey: "SHIELD_SECRET_KEY"
+  secretKey: "SHIELD_SECRET_KEY",
+  environment: ShieldFraudPlugin.Environment.PROD
 };
 
 ShieldFraudPlugin.initShieldFraud(config, {
