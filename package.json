@@ -1,7 +1,7 @@
 {
   "name": "shield-fraud-plugin",
   "displayName": "ShieldFraudPlugin",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "main": "www/js/ShieldFraudPlugin.js",
   "cordova": {
     "id": "com.shieldfraud",
