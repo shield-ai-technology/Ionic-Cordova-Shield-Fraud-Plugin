@@ -2,7 +2,7 @@ var exec = require('cordova/exec');
 
 var PLUGIN_NAME = "ShieldFraudPlugin";
 var CROSS_PLATFORM_NAME = "ionic-shield-fraud-plugin";
-var CROSS_PLATFORM_VERSION = "2.0.0";
+var CROSS_PLATFORM_VERSION = "2.1.0";
 
 var Environment = {
     PROD: 0,

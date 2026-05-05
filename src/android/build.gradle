@@ -15,5 +15,5 @@ repositories {
 }
 
 dependencies {
-  implementation("com.shield.android:shield-fraud:2.4.0")
+  implementation("com.shield.android:shield-fraud:2.5.0")
 }
