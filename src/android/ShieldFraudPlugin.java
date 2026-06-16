@@ -3,7 +3,7 @@ package com.shieldfraud;
 import android.app.Application;
 import android.os.Handler;
 import android.os.Looper;
-
+import android.util.Log;
 import androidx.annotation.Nullable;
 
 import com.shield.android.BlockedDialog;
@@ -18,7 +18,7 @@ import com.shield.android.ShieldCrossPlatformHelper;
 import com.shield.android.ShieldCrossPlatformParams;
 import com.shield.android.ShieldError;
 import com.shield.android.ShieldFactory;
-
+import com.shield.android.ShieldUserData;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.PluginResult;
@@ -32,6 +32,7 @@ import java.util.Map;
 
 public class ShieldFraudPlugin extends CordovaPlugin {
 
+    private static final String TAG = "ShieldFraudPlugin";
     private static Shield shieldInstance;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
@@ -50,8 +51,7 @@ public class ShieldFraudPlugin extends CordovaPlugin {
             sendAttributes(callbackContext, args);
             return true;
         } else if (action.equals("sendDeviceSignature")) {
-            String screenName = args.getString(0);
-            sendDeviceSignature(callbackContext, screenName);
+            sendDeviceSignature(callbackContext, args);
             return true;
         } else if (action.equals("isShieldInitialized")) {
             isShieldInitialized(callbackContext);
@@ -217,34 +217,99 @@ public class ShieldFraudPlugin extends CordovaPlugin {
             runOnMainThread(() -> callbackContext.error(e.getMessage()));
         }
     }
-
-    private void sendDeviceSignature(CallbackContext callbackContext, String screenName) {
+    
+    private void sendDeviceSignature(CallbackContext callbackContext, JSONArray args) {
         Shield shield = requireShield(callbackContext);
         if (shield == null) {
             return;
         }
-
-        shield.sendDeviceSignatureWithCallback(screenName, new Callback<String>() {
-            @Override
-            public void onCallback(Result<String> result) {
-                runOnMainThread(() -> {
-                    if (result instanceof Result.Success) {
-                        JSONObject latestDeviceResult = shield.getLatestDeviceResult();
-                        if (latestDeviceResult != null) {
-                            callbackContext.success(latestDeviceResult);
-                        } else {
-                            callbackContext.error("No device result available");
-                        }
+    
+        if (args == null || args.length() == 0) {
+            callbackContext.error("Invalid arguments");
+            return;
+        }
+    
+        try {
+            JSONObject payload = args.optJSONObject(0);
+    
+            String screenName = null;
+            String userId = null;
+    
+            if (payload != null) {
+                Object screenNameValue = payload.opt("screenName");
+                if (!(screenNameValue instanceof String)) {
+                    callbackContext.error("Invalid arguments");
+                    return;
+                }
+                screenName = (String) screenNameValue;
+    
+                if (payload.has("userId") && !payload.isNull("userId")) {
+                    Object userIdValue = payload.opt("userId");
+                    if (!(userIdValue instanceof String)) {
+                        callbackContext.error("Invalid arguments");
                         return;
                     }
+                    userId = (String) userIdValue;
+                }
+            } else {
 
-                    if (result instanceof Result.Failure) {
-                        ShieldError shieldError = ((Result.Failure<String>) result).getError();
-                        callbackContext.error(shieldErrorToMessage(shieldError));
+                Object screenNameValue = args.opt(0);
+                if (!(screenNameValue instanceof String)) {
+                    callbackContext.error("Invalid arguments");
+                    return;
+                }
+                screenName = (String) screenNameValue;
+    
+                if (args.length() > 1 && !args.isNull(1)) {
+                    Object userIdValue = args.opt(1);
+                    if (!(userIdValue instanceof String)) {
+                        callbackContext.error("Invalid arguments");
+                        return;
                     }
-                });
+                    userId = (String) userIdValue;
+                }
             }
-        });
+    
+            ShieldUserData userData = new ShieldUserData(screenName);
+    
+            if (userId != null && !userId.isEmpty()) {
+                userData.setUserId(userId);
+            }
+    
+            Log.d(TAG, "sendDeviceSignature called. screenName=" + screenName
+                    + ", hasUserId=" + (userId != null && !userId.isEmpty()));
+    
+            shield.sendDeviceSignatureWithCallback(userData, new Callback<String>() {
+                @Override
+                public void onCallback(Result<String> result) {
+                    runOnMainThread(() -> {
+                        if (result instanceof Result.Success) {
+                            String sessionId = ((Result.Success<String>) result).getData();
+    
+                            Log.d(TAG, "sendDeviceSignature success. sessionId=" + sessionId);
+    
+                            callbackContext.success(sessionId != null ? sessionId : "");
+                            return;
+                        }
+    
+                        if (result instanceof Result.Failure) {
+                            ShieldError shieldError = ((Result.Failure<String>) result).getError();
+                            String message = shieldErrorToMessage(shieldError);
+    
+                            Log.d(TAG, "sendDeviceSignature error. message=" + message);
+    
+                            callbackContext.error(message);
+                        }
+                    });
+                }
+            });
+        } catch (Throwable throwable) {
+            runOnMainThread(() -> callbackContext.error(
+                    throwable.getMessage() != null
+                            ? throwable.getMessage()
+                            : "sendDeviceSignature failed"
+            ));
+        }
     }
 
     private Shield requireShield(CallbackContext callbackContext) {
