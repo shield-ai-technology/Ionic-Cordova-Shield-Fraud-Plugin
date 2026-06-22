@@ -114,14 +114,14 @@ var ShieldFraudPlugin = {
         var payload = {
             screenName: screenName
         };
-        
-        if (userId !== null && userId !== undefined && userId.length > 0) {
+
+        if (userId !== null && userId !== undefined) {
             payload.userId = userId;
         }
     
         console.log("[ShieldFraudPlugin] sendDeviceSignature bridge called", {
             screenName: screenName,
-            hasUserId: !!payload.userId
+            hasUserId: typeof userId === "string" && userId.length > 0
         });
     
         exec(

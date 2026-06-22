@@ -231,43 +231,28 @@ public class ShieldFraudPlugin extends CordovaPlugin {
     
         try {
             JSONObject payload = args.optJSONObject(0);
+            if (payload == null) {
+                callbackContext.error("Invalid arguments");
+                return;
+            }
     
-            String screenName = null;
+            Object screenNameValue = payload.opt("screenName");
+            if (!(screenNameValue instanceof String)) {
+                callbackContext.error("Invalid arguments");
+                return;
+            }
+    
+            String screenName = (String) screenNameValue;
             String userId = null;
     
-            if (payload != null) {
-                Object screenNameValue = payload.opt("screenName");
-                if (!(screenNameValue instanceof String)) {
+            if (payload.has("userId") && !payload.isNull("userId")) {
+                Object userIdValue = payload.opt("userId");
+                if (!(userIdValue instanceof String)) {
                     callbackContext.error("Invalid arguments");
                     return;
                 }
-                screenName = (String) screenNameValue;
     
-                if (payload.has("userId") && !payload.isNull("userId")) {
-                    Object userIdValue = payload.opt("userId");
-                    if (!(userIdValue instanceof String)) {
-                        callbackContext.error("Invalid arguments");
-                        return;
-                    }
-                    userId = (String) userIdValue;
-                }
-            } else {
-
-                Object screenNameValue = args.opt(0);
-                if (!(screenNameValue instanceof String)) {
-                    callbackContext.error("Invalid arguments");
-                    return;
-                }
-                screenName = (String) screenNameValue;
-    
-                if (args.length() > 1 && !args.isNull(1)) {
-                    Object userIdValue = args.opt(1);
-                    if (!(userIdValue instanceof String)) {
-                        callbackContext.error("Invalid arguments");
-                        return;
-                    }
-                    userId = (String) userIdValue;
-                }
+                userId = (String) userIdValue;
             }
     
             ShieldUserData userData = new ShieldUserData(screenName);
