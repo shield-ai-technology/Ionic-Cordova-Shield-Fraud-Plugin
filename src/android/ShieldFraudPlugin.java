@@ -5,7 +5,6 @@ import android.os.Handler;
 import android.os.Looper;
 
 import androidx.annotation.Nullable;
-
 import com.shield.android.BlockedDialog;
 import com.shield.android.Callback;
 import com.shield.android.DeviceIntelligence;
@@ -18,7 +17,7 @@ import com.shield.android.ShieldCrossPlatformHelper;
 import com.shield.android.ShieldCrossPlatformParams;
 import com.shield.android.ShieldError;
 import com.shield.android.ShieldFactory;
-
+import com.shield.android.ShieldUserData;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.PluginResult;
@@ -50,8 +49,7 @@ public class ShieldFraudPlugin extends CordovaPlugin {
             sendAttributes(callbackContext, args);
             return true;
         } else if (action.equals("sendDeviceSignature")) {
-            String screenName = args.getString(0);
-            sendDeviceSignature(callbackContext, screenName);
+            sendDeviceSignature(callbackContext, args);
             return true;
         } else if (action.equals("isShieldInitialized")) {
             isShieldInitialized(callbackContext);
@@ -217,28 +215,57 @@ public class ShieldFraudPlugin extends CordovaPlugin {
             runOnMainThread(() -> callbackContext.error(e.getMessage()));
         }
     }
-
-    private void sendDeviceSignature(CallbackContext callbackContext, String screenName) {
+    
+    private void sendDeviceSignature(CallbackContext callbackContext, JSONArray args) {
         Shield shield = requireShield(callbackContext);
         if (shield == null) {
             return;
         }
-
-        shield.sendDeviceSignatureWithCallback(screenName, new Callback<String>() {
+    
+        if (args == null || args.length() == 0) {
+            callbackContext.error("Invalid arguments");
+            return;
+        }
+    
+        JSONObject payload = args.optJSONObject(0);
+        if (payload == null) {
+            callbackContext.error("Invalid arguments");
+            return;
+        }
+    
+        Object screenNameValue = payload.opt("screenName");
+        if (!(screenNameValue instanceof String)) {
+            callbackContext.error("Invalid arguments");
+            return;
+        }
+    
+        String screenName = (String) screenNameValue;
+        String userId = null;
+    
+        if (payload.has("userId") && !payload.isNull("userId")) {
+            Object userIdValue = payload.opt("userId");
+            if (!(userIdValue instanceof String)) {
+                callbackContext.error("Invalid arguments");
+                return;
+            }
+    
+            userId = (String) userIdValue;
+        }
+    
+        ShieldUserData userData = new ShieldUserData(screenName);
+    
+        if (userId != null && !userId.isEmpty()) {
+            userData.setUserId(userId);
+        }
+    
+        shield.sendDeviceSignatureWithCallback(userData, new Callback<String>() {
             @Override
             public void onCallback(Result<String> result) {
                 runOnMainThread(() -> {
                     if (result instanceof Result.Success) {
-                        JSONObject latestDeviceResult = shield.getLatestDeviceResult();
-                        if (latestDeviceResult != null) {
-                            callbackContext.success(latestDeviceResult);
-                        } else {
-                            callbackContext.error("No device result available");
-                        }
-                        return;
-                    }
-
-                    if (result instanceof Result.Failure) {
+                        String sessionId = ((Result.Success<String>) result).getData();
+                        callbackContext.success(sessionId != null ? sessionId : "");
+                    } else if (result instanceof Result.Failure) {
                         ShieldError shieldError = ((Result.Failure<String>) result).getError();
                         callbackContext.error(shieldErrorToMessage(shieldError));
                     }

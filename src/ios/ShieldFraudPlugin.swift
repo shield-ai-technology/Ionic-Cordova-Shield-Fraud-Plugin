@@ -5,7 +5,11 @@ import ShieldFraud
     private static var isShieldInitialized: Bool = false
     private var callbackId: String = ""
 
-    private func sendPluginResult(_ pluginResult: CDVPluginResult, callbackId: String) {
+    private func sendPluginResult(_ pluginResult: CDVPluginResult?, callbackId: String) {
+        guard let pluginResult = pluginResult else {
+            return
+        }
+
         DispatchQueue.main.async {
             self.commandDelegate.send(pluginResult, callbackId: callbackId)
         }
@@ -81,7 +85,7 @@ import ShieldFraud
     @objc(getDeviceResult:) func getDeviceResult(command: CDVInvokedUrlCommand) {
         self.commandDelegate.run {
             Shield.shared().setDeviceResultStateListener {
-                var pluginResult: CDVPluginResult
+                let pluginResult: CDVPluginResult?
                 if let deviceResult = Shield.shared().getLatestDeviceResult(),
                    let jsonData     = try? JSONSerialization.data(withJSONObject: deviceResult, options: []),
                    let dataString   = String(bytes: jsonData, encoding: .utf8) {
@@ -105,7 +109,7 @@ import ShieldFraud
         }
         self.commandDelegate.run {
             Shield.shared().sendAttributes(withScreenName: screenName, data: data) { (status, error) in
-                let pluginResult: CDVPluginResult
+                let pluginResult: CDVPluginResult?
                 if let error = error {
                     pluginResult = CDVPluginResult(status: .error, messageAs: error.localizedDescription)
                 } else {
@@ -117,16 +121,67 @@ import ShieldFraud
     }
 
     @objc(sendDeviceSignature:) func sendDeviceSignature(command: CDVInvokedUrlCommand) {
-        guard let screenName = command.arguments[0] as? String else {
-            let pluginResult = CDVPluginResult(status: .error, messageAs: "screenName is required")
+        guard command.arguments.count > 0,
+            let payload = command.arguments[0] as? [String: Any] else {
+            let pluginResult = CDVPluginResult(status: .error, messageAs: "Invalid arguments")
             self.sendPluginResult(pluginResult, callbackId: command.callbackId)
             return
         }
-        self.commandDelegate.run {
-            Shield.shared().sendDeviceSignature(withScreenName: screenName) {
-                let pluginResult = CDVPluginResult(status: .ok, messageAs: true)
+
+        guard let screenName = payload["screenName"] as? String else {
+            let pluginResult = CDVPluginResult(status: .error, messageAs: "Invalid arguments")
+            self.sendPluginResult(pluginResult, callbackId: command.callbackId)
+            return
+        }
+
+        var userId: String? = nil
+
+        if let userIdValue = payload["userId"],
+        !(userIdValue is NSNull) {
+            guard let validUserId = userIdValue as? String else {
+                let pluginResult = CDVPluginResult(status: .error, messageAs: "Invalid arguments")
                 self.sendPluginResult(pluginResult, callbackId: command.callbackId)
+                return
             }
+
+            userId = validUserId
+        }
+
+        self.commandDelegate.run {
+            let userData: ShieldUserData
+
+            if let userId = userId,
+            !userId.isEmpty {
+                userData = ShieldUserData(
+                    screenName: screenName,
+                    userId: userId
+                )
+            } else {
+                userData = ShieldUserData(
+                    screenName: screenName
+                )
+            }
+
+            Shield.shared().sendDeviceSignature(
+                withUserData: userData,
+                completionHandler: {
+                    if let error = Shield.shared().getErrorResponse() {
+                        let pluginResult = CDVPluginResult(
+                            status: .error,
+                            messageAs: error.localizedDescription
+                        )
+                        self.sendPluginResult(pluginResult, callbackId: command.callbackId)
+                    } else {
+                        let sessionId = Shield.shared().sessionId
+
+                        let pluginResult = CDVPluginResult(
+                            status: .ok,
+                            messageAs: sessionId
+                        )
+                        self.sendPluginResult(pluginResult, callbackId: command.callbackId)
+                    }
+                }
+            )
         }
     }
 
@@ -142,7 +197,7 @@ extension ShieldFraudPlugin: DeviceShieldCallback {
         guard let jsonData   = try? JSONSerialization.data(withJSONObject: result, options: []),
               let dataString = String(bytes: jsonData, encoding: .utf8) else { return }
         let pluginResult = CDVPluginResult(status: .ok, messageAs: dataString)
-        pluginResult.setKeepCallbackAs(true)
+        pluginResult?.setKeepCallbackAs(true)
         self.sendPluginResult(pluginResult, callbackId: self.callbackId)
     }
 
