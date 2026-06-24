@@ -104,29 +104,31 @@ var ShieldFraudPlugin = {
         exec(success || noop, error || noop, PLUGIN_NAME, "sendAttributes", [screenName, data]);
     },
 
-    sendDeviceSignature: function(screenName, userId, success, error) {
-        if (typeof userId === "function") {
-            error = success;
-            success = userId;
-            userId = undefined;
+    sendDeviceSignature: function(screenName, success, error, userId) {
+        success = success || noop;
+        error = error || noop;
+    
+        if (typeof screenName !== "string") {
+            error("Invalid arguments");
+            return;
+        }
+    
+        if (userId !== null && userId !== undefined && typeof userId !== "string") {
+            error("Invalid arguments");
+            return;
         }
     
         var payload = {
             screenName: screenName
         };
-
+    
         if (userId !== null && userId !== undefined) {
             payload.userId = userId;
         }
     
-        console.log("[ShieldFraudPlugin] sendDeviceSignature bridge called", {
-            screenName: screenName,
-            hasUserId: typeof userId === "string" && userId.length > 0
-        });
-    
         exec(
             normalizeSuccessCallback(success),
-            error || noop,
+            error,
             PLUGIN_NAME,
             "sendDeviceSignature",
             [payload]

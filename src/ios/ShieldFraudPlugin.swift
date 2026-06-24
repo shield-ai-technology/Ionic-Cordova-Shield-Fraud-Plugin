@@ -7,7 +7,6 @@ import ShieldFraud
 
     private func sendPluginResult(_ pluginResult: CDVPluginResult?, callbackId: String) {
         guard let pluginResult = pluginResult else {
-            NSLog("[ShieldFraudPlugin] CDVPluginResult creation failed. callbackId=%@", callbackId)
             return
         }
 
@@ -122,87 +121,69 @@ import ShieldFraud
     }
 
     @objc(sendDeviceSignature:) func sendDeviceSignature(command: CDVInvokedUrlCommand) {
-    guard command.arguments.count > 0,
-          let payload = command.arguments[0] as? [String: Any] else {
-        let pluginResult = CDVPluginResult(status: .error, messageAs: "Invalid arguments")
-        self.sendPluginResult(pluginResult, callbackId: command.callbackId)
-        return
-    }
-
-    guard let screenName = payload["screenName"] as? String else {
-        let pluginResult = CDVPluginResult(status: .error, messageAs: "Invalid arguments")
-        self.sendPluginResult(pluginResult, callbackId: command.callbackId)
-        return
-    }
-
-    var userId: String? = nil
-
-    if let userIdValue = payload["userId"],
-       !(userIdValue is NSNull) {
-        guard let validUserId = userIdValue as? String else {
+        guard command.arguments.count > 0,
+            let payload = command.arguments[0] as? [String: Any] else {
             let pluginResult = CDVPluginResult(status: .error, messageAs: "Invalid arguments")
             self.sendPluginResult(pluginResult, callbackId: command.callbackId)
             return
         }
 
-        userId = validUserId
-    }
-
-    let hasUserId = userId != nil && !(userId?.isEmpty ?? true)
-
-    NSLog(
-        "[ShieldFraudPlugin] sendDeviceSignature called. screenName=%@, hasUserId=%@",
-        screenName,
-        hasUserId ? "true" : "false"
-    )
-
-    self.commandDelegate.run {
-        let userData: ShieldUserData
-
-        if let userId = userId,
-           !userId.isEmpty {
-            userData = ShieldUserData(
-                screenName: screenName,
-                userId: userId
-            )
-        } else {
-            userData = ShieldUserData(
-                screenName: screenName
-            )
+        guard let screenName = payload["screenName"] as? String else {
+            let pluginResult = CDVPluginResult(status: .error, messageAs: "Invalid arguments")
+            self.sendPluginResult(pluginResult, callbackId: command.callbackId)
+            return
         }
 
-        Shield.shared().sendDeviceSignature(
-            withUserData: userData,
-            completionHandler: {
-                if let error = Shield.shared().getErrorResponse() {
-                    NSLog(
-                        "[ShieldFraudPlugin] sendDeviceSignature error. message=%@",
-                        error.localizedDescription
-                    )
+        var userId: String? = nil
 
-                    let pluginResult = CDVPluginResult(
-                        status: .error,
-                        messageAs: error.localizedDescription
-                    )
-                    self.sendPluginResult(pluginResult, callbackId: command.callbackId)
-                } else {
-                    let sessionId = Shield.shared().sessionId
-
-                    NSLog(
-                        "[ShieldFraudPlugin] sendDeviceSignature success. sessionId=%@",
-                        String(describing: sessionId)
-                    )
-
-                    let pluginResult = CDVPluginResult(
-                        status: .ok,
-                        messageAs: sessionId
-                    )
-                    self.sendPluginResult(pluginResult, callbackId: command.callbackId)
-                }
+        if let userIdValue = payload["userId"],
+        !(userIdValue is NSNull) {
+            guard let validUserId = userIdValue as? String else {
+                let pluginResult = CDVPluginResult(status: .error, messageAs: "Invalid arguments")
+                self.sendPluginResult(pluginResult, callbackId: command.callbackId)
+                return
             }
-        )
+
+            userId = validUserId
+        }
+
+        self.commandDelegate.run {
+            let userData: ShieldUserData
+
+            if let userId = userId,
+            !userId.isEmpty {
+                userData = ShieldUserData(
+                    screenName: screenName,
+                    userId: userId
+                )
+            } else {
+                userData = ShieldUserData(
+                    screenName: screenName
+                )
+            }
+
+            Shield.shared().sendDeviceSignature(
+                withUserData: userData,
+                completionHandler: {
+                    if let error = Shield.shared().getErrorResponse() {
+                        let pluginResult = CDVPluginResult(
+                            status: .error,
+                            messageAs: error.localizedDescription
+                        )
+                        self.sendPluginResult(pluginResult, callbackId: command.callbackId)
+                    } else {
+                        let sessionId = Shield.shared().sessionId
+
+                        let pluginResult = CDVPluginResult(
+                            status: .ok,
+                            messageAs: sessionId
+                        )
+                        self.sendPluginResult(pluginResult, callbackId: command.callbackId)
+                    }
+                }
+            )
+        }
     }
-}
 
     @objc(isShieldInitialized:) func isShieldInitialized(command: CDVInvokedUrlCommand) {
         let pluginResult = CDVPluginResult(status: .ok, messageAs: ShieldFraudPlugin.isShieldInitialized)

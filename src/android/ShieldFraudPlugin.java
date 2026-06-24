@@ -229,72 +229,51 @@ public class ShieldFraudPlugin extends CordovaPlugin {
             return;
         }
     
-        try {
-            JSONObject payload = args.optJSONObject(0);
-            if (payload == null) {
-                callbackContext.error("Invalid arguments");
-                return;
-            }
-    
-            Object screenNameValue = payload.opt("screenName");
-            if (!(screenNameValue instanceof String)) {
-                callbackContext.error("Invalid arguments");
-                return;
-            }
-    
-            String screenName = (String) screenNameValue;
-            String userId = null;
-    
-            if (payload.has("userId") && !payload.isNull("userId")) {
-                Object userIdValue = payload.opt("userId");
-                if (!(userIdValue instanceof String)) {
-                    callbackContext.error("Invalid arguments");
-                    return;
-                }
-    
-                userId = (String) userIdValue;
-            }
-    
-            ShieldUserData userData = new ShieldUserData(screenName);
-    
-            if (userId != null && !userId.isEmpty()) {
-                userData.setUserId(userId);
-            }
-    
-            Log.d(TAG, "sendDeviceSignature called. screenName=" + screenName
-                    + ", hasUserId=" + (userId != null && !userId.isEmpty()));
-    
-            shield.sendDeviceSignatureWithCallback(userData, new Callback<String>() {
-                @Override
-                public void onCallback(Result<String> result) {
-                    runOnMainThread(() -> {
-                        if (result instanceof Result.Success) {
-                            String sessionId = ((Result.Success<String>) result).getData();
-    
-                            Log.d(TAG, "sendDeviceSignature success. sessionId=" + sessionId);
-    
-                            callbackContext.success(sessionId != null ? sessionId : "");
-                            return;
-                        }
-    
-                        if (result instanceof Result.Failure) {
-                            ShieldError shieldError = ((Result.Failure<String>) result).getError();
-                            String message = shieldErrorToMessage(shieldError);
-    
-                            Log.d(TAG, "sendDeviceSignature error. message=" + message);
-    
-                            callbackContext.error(message);
-                        }
-                    });
-                }
-            });
-        } catch (Throwable throwable) {
-            runOnMainThread(() -> callbackContext.error(
-                    throwable.getMessage() != null
-                            ? throwable.getMessage()
-                            : "sendDeviceSignature failed"
-            ));
+        JSONObject payload = args.optJSONObject(0);
+        if (payload == null) {
+            callbackContext.error("Invalid arguments");
+            return;
         }
+    
+        Object screenNameValue = payload.opt("screenName");
+        if (!(screenNameValue instanceof String)) {
+            callbackContext.error("Invalid arguments");
+            return;
+        }
+    
+        String screenName = (String) screenNameValue;
+        String userId = null;
+    
+        if (payload.has("userId") && !payload.isNull("userId")) {
+            Object userIdValue = payload.opt("userId");
+            if (!(userIdValue instanceof String)) {
+                callbackContext.error("Invalid arguments");
+                return;
+            }
+    
+            userId = (String) userIdValue;
+        }
+    
+        ShieldUserData userData = new ShieldUserData(screenName);
+    
+        if (userId != null && !userId.isEmpty()) {
+            userData.setUserId(userId);
+        }
+    
+        shield.sendDeviceSignatureWithCallback(userData, new Callback<String>() {
+            @Override
+            public void onCallback(Result<String> result) {
+                runOnMainThread(() -> {
+                    if (result instanceof Result.Success) {
+                        String sessionId = ((Result.Success<String>) result).getData();
+                        callbackContext.success(sessionId != null ? sessionId : "");
+                    } else if (result instanceof Result.Failure) {
+                        ShieldError shieldError = ((Result.Failure<String>) result).getError();
+                        callbackContext.error(shieldErrorToMessage(shieldError));
+                    }
+                });
+            }
+        });
     }
 
     private Shield requireShield(CallbackContext callbackContext) {
