@@ -3,9 +3,8 @@ package com.shieldfraud;
 import android.app.Application;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
-import androidx.annotation.Nullable;
 
+import androidx.annotation.Nullable;
 import com.shield.android.BlockedDialog;
 import com.shield.android.Callback;
 import com.shield.android.DeviceIntelligence;
@@ -32,7 +31,6 @@ import java.util.Map;
 
 public class ShieldFraudPlugin extends CordovaPlugin {
 
-    private static final String TAG = "ShieldFraudPlugin";
     private static Shield shieldInstance;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
