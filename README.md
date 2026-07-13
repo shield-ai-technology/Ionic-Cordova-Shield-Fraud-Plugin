@@ -247,7 +247,13 @@ function errorCallback(error) {
 Use the `sendDeviceSignature` function to manually trigger device signature collection for a screen or user checkpoint.
 
 ```
+// With screen name only
+
 ShieldFraudPlugin.sendDeviceSignature("Checkout", successCallback, errorCallback);
+
+// With screen name and user Id
+
+ShieldFraudPlugin.sendDeviceSignature("Checkout", successCallback, errorCallback, "user_Id");
 
 function successCallback(message) {
     console.log("sendDeviceSignature success:", message);
