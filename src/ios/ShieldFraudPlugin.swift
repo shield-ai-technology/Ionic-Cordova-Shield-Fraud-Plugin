@@ -3,7 +3,6 @@ import ShieldFraud
 @objc(ShieldFraudPlugin) class ShieldFraudPlugin : CDVPlugin {
 
     private static var shieldInstance: Shield?
-    private var callbackId: String = ""
 
     private func sendPluginResult(_ pluginResult: CDVPluginResult?, callbackId: String) {
         guard let pluginResult = pluginResult else {
@@ -37,14 +36,57 @@ import ShieldFraud
         return error.localizedDescription
     }
 
-    @objc(initShieldFraud:) func initShieldFraud(command: CDVInvokedUrlCommand) {
-        self.callbackId = command.callbackId
-
-        if ShieldFraudPlugin.shieldInstance != nil {
-            let pluginResult = CDVPluginResult(status: .ok, messageAs: true)
-            self.sendPluginResult(pluginResult, callbackId: command.callbackId)
-            return
+    private func serializeDeviceResult(_ data: [String: Any]) throws -> String {
+        let jsonData = try JSONSerialization.data(withJSONObject: data, options: [])
+        guard let dataString = String(data: jsonData, encoding: .utf8) else {
+            throw NSError(
+                domain: "ShieldFraudPlugin",
+                code: 1,
+                userInfo: [NSLocalizedDescriptionKey: "Device result is not valid UTF-8"]
+            )
         }
+        return dataString
+    }
+
+    private func serializationErrorMessage(_ error: Error) -> String {
+        return "Failed to serialize device result: \(error.localizedDescription)"
+    }
+
+    private func registerDeviceResultListener(shield: Shield, callbackId: String) {
+        shield.onDeviceResult { [weak self] intelligence, error in
+            guard let self = self else {
+                return
+            }
+
+            let pluginResult: CDVPluginResult?
+            if let error = error {
+                pluginResult = CDVPluginResult(
+                    status: .error,
+                    messageAs: self.shieldErrorMessage(error)
+                )
+            } else if let data = intelligence?.data {
+                do {
+                    let dataString = try self.serializeDeviceResult(data)
+                    pluginResult = CDVPluginResult(status: .ok, messageAs: dataString)
+                } catch {
+                    pluginResult = CDVPluginResult(
+                        status: .error,
+                        messageAs: self.serializationErrorMessage(error)
+                    )
+                }
+            } else {
+                pluginResult = CDVPluginResult(
+                    status: .error,
+                    messageAs: "Device result data is unavailable"
+                )
+            }
+
+            pluginResult?.setKeepCallbackAs(true)
+            self.sendPluginResult(pluginResult, callbackId: callbackId)
+        }
+    }
+
+    @objc(initShieldFraud:) func initShieldFraud(command: CDVInvokedUrlCommand) {
         guard command.arguments.count > 0,
               let payload = command.arguments[0] as? [String: Any],
               let siteID = payload["siteID"] as? String,
@@ -53,6 +95,17 @@ import ShieldFraud
               !key.isEmpty else {
             let pluginResult = CDVPluginResult(status: .error, messageAs: "siteID and secretKey are required")
             self.sendPluginResult(pluginResult, callbackId: command.callbackId)
+            return
+        }
+
+        let enableDeviceResultListener = payload["enableDeviceResultListener"] as? Bool ?? false
+        if let shield = ShieldFraudPlugin.shieldInstance {
+            if enableDeviceResultListener {
+                registerDeviceResultListener(shield: shield, callbackId: command.callbackId)
+            } else {
+                let pluginResult = CDVPluginResult(status: .ok, messageAs: true)
+                self.sendPluginResult(pluginResult, callbackId: command.callbackId)
+            }
             return
         }
 
@@ -94,33 +147,8 @@ import ShieldFraud
         let shield = ShieldFactory.createShield(config: config)
         ShieldFraudPlugin.shieldInstance = shield
 
-        let enableDeviceResultListener = payload["enableDeviceResultListener"] as? Bool ?? false
         if enableDeviceResultListener {
-            shield.onDeviceResult { [weak self] intelligence, error in
-                guard let self = self else {
-                    return
-                }
-
-                if let error = error {
-                    let pluginResult: CDVPluginResult? = CDVPluginResult(
-                        status: .error,
-                        messageAs: self.shieldErrorMessage(error)
-                    )
-                    pluginResult?.setKeepCallbackAs(true)
-                    self.sendPluginResult(pluginResult, callbackId: self.callbackId)
-                    return
-                }
-
-                guard let data = intelligence?.data,
-                      let jsonData = try? JSONSerialization.data(withJSONObject: data, options: []),
-                      let dataString = String(data: jsonData, encoding: .utf8) else {
-                    return
-                }
-
-                let pluginResult: CDVPluginResult? = CDVPluginResult(status: .ok, messageAs: dataString)
-                pluginResult?.setKeepCallbackAs(true)
-                self.sendPluginResult(pluginResult, callbackId: self.callbackId)
-            }
+            registerDeviceResultListener(shield: shield, callbackId: command.callbackId)
         } else {
             let pluginResult = CDVPluginResult(status: .ok, messageAs: true)
             self.sendPluginResult(pluginResult, callbackId: command.callbackId)
@@ -144,13 +172,21 @@ import ShieldFraud
                 return
             }
 
+            guard let deviceResult = shield.getLatestDeviceResult()?.data else {
+                let pluginResult = CDVPluginResult(status: .error, messageAs: "No device result available")
+                self.sendPluginResult(pluginResult, callbackId: command.callbackId)
+                return
+            }
+
             let pluginResult: CDVPluginResult?
-            if let deviceResult = shield.getLatestDeviceResult()?.data,
-               let jsonData = try? JSONSerialization.data(withJSONObject: deviceResult, options: []),
-               let dataString = String(data: jsonData, encoding: .utf8) {
+            do {
+                let dataString = try self.serializeDeviceResult(deviceResult)
                 pluginResult = CDVPluginResult(status: .ok, messageAs: dataString)
-            } else {
-                pluginResult = CDVPluginResult(status: .error, messageAs: "No device result available")
+            } catch {
+                pluginResult = CDVPluginResult(
+                    status: .error,
+                    messageAs: self.serializationErrorMessage(error)
+                )
             }
             self.sendPluginResult(pluginResult, callbackId: command.callbackId)
         }

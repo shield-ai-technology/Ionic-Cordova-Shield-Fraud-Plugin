@@ -69,3 +69,39 @@ test("uses the CocoaPods CDN instead of the legacy Git Specs source", () => {
     assert.match(pluginXml, /<source url="https:\/\/cdn\.cocoapods\.org\/" \/>/);
     assert.doesNotMatch(pluginXml, /github\.com\/CocoaPods\/Specs\.git/);
 });
+
+test("translates synchronous Android exceptions at the Cordova action boundary", () => {
+    assert.match(android, /catch \(Exception exception\)/);
+    assert.match(android, /sendExceptionError\(callbackContext, action, exception\)/);
+    assert.match(android, /if \("initShieldFraud"\.equals\(action\)\)[\s\S]*shieldInstance = null/);
+    assert.doesNotMatch(android, /catch \(Throwable/);
+});
+
+test("routes Android device results to the latest Cordova callback context", () => {
+    assert.match(android, /class DeviceResultCallbackRouter implements Callback<DeviceIntelligence>/);
+    assert.match(android, /volatile CallbackContext callbackContext/);
+    assert.match(android, /deviceResultCallbackRouter\.setCallbackContext\(callbackContext\)/);
+    assert.match(android, /shieldInstance\.getLatestDeviceResult\(\)/);
+    assert.match(android, /deviceResultCallbackRouter\.replayCachedResult\(cachedResult\)/);
+    assert.match(android, /void onReset\(\)[\s\S]*deviceResultCallbackRouter\.clear\(\)/);
+});
+
+test("replaces the iOS listener with an immutable callback ID", () => {
+    assert.doesNotMatch(swift, /private var callbackId/);
+    assert.match(
+        swift,
+        /registerDeviceResultListener\(shield: Shield, callbackId: String\)/
+    );
+    assert.match(swift, /sendPluginResult\(pluginResult, callbackId: callbackId\)/);
+    assert.match(
+        swift,
+        /if let shield = ShieldFraudPlugin\.shieldInstance[\s\S]*if enableDeviceResultListener[\s\S]*registerDeviceResultListener\(shield: shield, callbackId: command\.callbackId\)/
+    );
+});
+
+test("reports iOS device-result serialization failures explicitly", () => {
+    assert.match(swift, /try JSONSerialization\.data\(withJSONObject: data, options: \[\]\)/);
+    assert.match(swift, /catch/);
+    assert.match(swift, /Failed to serialize device result:/);
+    assert.doesNotMatch(swift, /try\? JSONSerialization\.data/);
+});
