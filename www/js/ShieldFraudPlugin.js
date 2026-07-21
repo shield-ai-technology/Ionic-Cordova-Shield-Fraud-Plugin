@@ -81,6 +81,14 @@ var ShieldFraudPlugin = {
             crossPlatformVersion: CROSS_PLATFORM_VERSION
         };
 
+        if (typeof config.partnerId === "string" && config.partnerId.length > 0) {
+            payload.partnerId = config.partnerId;
+        }
+
+        if (typeof config.needBackgroundListener === "boolean") {
+            payload.needBackgroundListener = config.needBackgroundListener;
+        }
+
         exec(
             enableDeviceResultListener ? normalizeSuccessCallback(listenerCallbacks.onSuccess) : noop,
             enableDeviceResultListener ? listenerCallbacks.onFailure : noop,

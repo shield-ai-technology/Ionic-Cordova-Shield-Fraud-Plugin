@@ -87,6 +87,13 @@ public class ShieldFraudPlugin extends CordovaPlugin {
         shieldConfig.setEnvironment(parseEnvironment(payload.optInt("environment", 0)));
         shieldConfig.setLogLevel(parseLogLevel(payload.optInt("logLevel", 0)));
         shieldConfig.setBlockScreenRecording(payload.optBoolean("blockScreenRecording", false));
+        String partnerId = payload.optString("partnerId", "");
+        if (!partnerId.isEmpty()) {
+            shieldConfig.setPartnerId(partnerId);
+        }
+        shieldConfig.setNeedBackgroundListener(
+                payload.optBoolean("needBackgroundListener", true)
+        );
 
         String crossPlatformName = payload.optString("crossPlatformName", "").trim();
         String crossPlatformVersion = payload.optString("crossPlatformVersion", "").trim();
