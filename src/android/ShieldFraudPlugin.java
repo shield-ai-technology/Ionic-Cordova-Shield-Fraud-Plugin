@@ -116,11 +116,9 @@ public class ShieldFraudPlugin extends CordovaPlugin {
         if (!partnerId.isEmpty()) {
             shieldConfig.setPartnerId(partnerId);
         }
-        Object needBackgroundListenerValue = payload.opt("needBackgroundListener");
-        if (needBackgroundListenerValue instanceof Boolean) {
-            boolean needBackgroundListener = (Boolean) needBackgroundListenerValue;
-            shieldConfig.setNeedBackgroundListener(needBackgroundListener);
-        }
+        shieldConfig.setNeedBackgroundListener(
+                payload.optBoolean("needBackgroundListener", true)
+        );
 
         String crossPlatformName = payload.optString("crossPlatformName", "").trim();
         String crossPlatformVersion = payload.optString("crossPlatformVersion", "").trim();

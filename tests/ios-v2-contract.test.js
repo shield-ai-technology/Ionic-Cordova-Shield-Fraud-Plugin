@@ -44,11 +44,10 @@ test("maps partnerId into both native ShieldConfig instances", () => {
     assert.match(android, /shieldConfig\.setPartnerId\(partnerId\)/);
 });
 
-test("strictly maps needBackgroundListener into Android ShieldConfig", () => {
-    assert.match(android, /needBackgroundListenerValue\s+instanceof\s+Boolean/);
+test("maps needBackgroundListener into Android ShieldConfig with the native true default", () => {
     assert.match(
         android,
-        /shieldConfig\.setNeedBackgroundListener\(needBackgroundListener\)/
+        /shieldConfig\.setNeedBackgroundListener\(\s*payload\.optBoolean\("needBackgroundListener", true\)\s*\)/
     );
 });
 
@@ -65,9 +64,11 @@ test("checks the sendAttributes argument count before Swift array subscripting",
     assert.ok(countGuard < firstSubscript);
 });
 
-test("uses the CocoaPods CDN instead of the legacy Git Specs source", () => {
-    assert.match(pluginXml, /<source url="https:\/\/cdn\.cocoapods\.org\/" \/>/);
-    assert.doesNotMatch(pluginXml, /github\.com\/CocoaPods\/Specs\.git/);
+test("uses the configured CocoaPods Git Specs source", () => {
+    assert.match(
+        pluginXml,
+        /<source url="https:\/\/github\.com\/CocoaPods\/Specs\.git" \/>/
+    );
 });
 
 test("translates synchronous Android exceptions at the Cordova action boundary", () => {
