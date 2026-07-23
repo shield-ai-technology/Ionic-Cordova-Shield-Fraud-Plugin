@@ -33,37 +33,39 @@ public class ShieldFraudPlugin extends CordovaPlugin {
 
     private static Shield shieldInstance;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private volatile CallbackContext deviceResultCallbackContext;
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
-        if (action.equals("initShieldFraud")) {
+        if ("initShieldFraud".equals(action)) {
             initShieldFraud(callbackContext, args);
             return true;
-        } else if (action.equals("getSessionID")) {
+        } else if ("getSessionID".equals(action)) {
             getSessionId(callbackContext);
             return true;
-        } else if (action.equals("getDeviceResult")) {
+        } else if ("getDeviceResult".equals(action)) {
             getDeviceResult(callbackContext);
             return true;
-        } else if (action.equals("sendAttributes")) {
+        } else if ("sendAttributes".equals(action)) {
             sendAttributes(callbackContext, args);
             return true;
-        } else if (action.equals("sendDeviceSignature")) {
+        } else if ("sendDeviceSignature".equals(action)) {
             sendDeviceSignature(callbackContext, args);
             return true;
-        } else if (action.equals("isShieldInitialized")) {
+        } else if ("isShieldInitialized".equals(action)) {
             isShieldInitialized(callbackContext);
             return true;
         }
         return false;
     }
 
-    private void initShieldFraud(CallbackContext callbackContext, JSONArray args) {
-        if (ShieldFraudPlugin.shieldInstance != null) {
-            runOnMainThread(() -> callbackContext.success(1));
-            return;
-        }
+    @Override
+    public void onReset() {
+        deviceResultCallbackContext = null;
+        super.onReset();
+    }
 
+    private void initShieldFraud(CallbackContext callbackContext, JSONArray args) {
         if (args == null) {
             callbackContext.error("Invalid arguments");
             return;
@@ -80,6 +82,16 @@ public class ShieldFraudPlugin extends CordovaPlugin {
 
         if (siteID.isEmpty() || key.isEmpty()) {
             callbackContext.error("siteID and secretKey are required");
+            return;
+        }
+
+        boolean enableDeviceResultListener = payload.optBoolean("enableDeviceResultListener", false);
+        if (ShieldFraudPlugin.shieldInstance != null) {
+            if (enableDeviceResultListener) {
+                deviceResultCallbackContext = callbackContext;
+            } else {
+                runOnMainThread(() -> callbackContext.success(1));
+            }
             return;
         }
 
@@ -110,52 +122,24 @@ public class ShieldFraudPlugin extends CordovaPlugin {
             shieldConfig.setBlockedDialog(new BlockedDialog(dialogTitle, dialogBody));
         }
 
-        boolean enableDeviceResultListener = payload.optBoolean("enableDeviceResultListener", false);
-
-        try {
-            Application application = cordova.getActivity().getApplication();
-            if (enableDeviceResultListener) {
-                ShieldFraudPlugin.shieldInstance = ShieldFactory.createShieldWithCallback(
-                        application,
-                        shieldConfig,
-                        new Callback<DeviceIntelligence>() {
-                            @Override
-                            public void onCallback(Result<DeviceIntelligence> result) {
-                                runOnMainThread(() -> {
-                                    if (result instanceof Result.Success) {
-                                        DeviceIntelligence intelligence = ((Result.Success<DeviceIntelligence>) result).getData();
-                                        JSONObject payload = intelligence != null ? intelligence.getData() : null;
-                                        PluginResult pluginResult = new PluginResult(
-                                                PluginResult.Status.OK,
-                                                payload != null ? payload : new JSONObject()
-                                        );
-                                        pluginResult.setKeepCallback(true);
-                                        callbackContext.sendPluginResult(pluginResult);
-                                        return;
-                                    }
-
-                                    if (result instanceof Result.Failure) {
-                                        ShieldError shieldError = ((Result.Failure<DeviceIntelligence>) result).getError();
-                                        PluginResult pluginResult = new PluginResult(
-                                                PluginResult.Status.ERROR,
-                                                shieldErrorToMessage(shieldError)
-                                        );
-                                        pluginResult.setKeepCallback(true);
-                                        callbackContext.sendPluginResult(pluginResult);
-                                    }
-                                });
-                            }
+        Application application = cordova.getActivity().getApplication();
+        if (enableDeviceResultListener) {
+            deviceResultCallbackContext = callbackContext;
+            ShieldFraudPlugin.shieldInstance = ShieldFactory.createShieldWithCallback(
+                    application,
+                    shieldConfig,
+                    new Callback<DeviceIntelligence>() {
+                        @Override
+                        public void onCallback(Result<DeviceIntelligence> result) {
+                            handleDeviceResult(result);
                         }
-                );
-                return;
-            }
-
-            ShieldFraudPlugin.shieldInstance = ShieldFactory.createShield(application, shieldConfig);
-            runOnMainThread(() -> callbackContext.success(1));
-        } catch (Throwable throwable) {
-            ShieldFraudPlugin.shieldInstance = null;
-            runOnMainThread(() -> callbackContext.error(throwable.getMessage() != null ? throwable.getMessage() : "Failed to initialize Shield SDK"));
+                    }
+            );
+            return;
         }
+
+        ShieldFraudPlugin.shieldInstance = ShieldFactory.createShield(application, shieldConfig);
+        runOnMainThread(() -> callbackContext.success(1));
     }
 
     private void isShieldInitialized(CallbackContext callbackContext) {
@@ -204,22 +188,11 @@ public class ShieldFraudPlugin extends CordovaPlugin {
             shield.sendAttributesWithCallback(screenName, data, new Callback<String>() {
                 @Override
                 public void onCallback(Result<String> result) {
-                    runOnMainThread(() -> {
-                        if (result instanceof Result.Success) {
-                            String sessionId = ((Result.Success<String>) result).getData();
-                            callbackContext.success(sessionId != null ? sessionId : "");
-                            return;
-                        }
-
-                        if (result instanceof Result.Failure) {
-                            ShieldError shieldError = ((Result.Failure<String>) result).getError();
-                            callbackContext.error(shieldErrorToMessage(shieldError));
-                        }
-                    });
+                    handleStringResult(result, callbackContext);
                 }
             });
         } catch (JSONException e) {
-            runOnMainThread(() -> callbackContext.error(e.getMessage()));
+            sendExceptionError(callbackContext, "sendAttributes", e);
         }
     }
     
@@ -268,15 +241,7 @@ public class ShieldFraudPlugin extends CordovaPlugin {
         shield.sendDeviceSignatureWithCallback(userData, new Callback<String>() {
             @Override
             public void onCallback(Result<String> result) {
-                runOnMainThread(() -> {
-                    if (result instanceof Result.Success) {
-                        String sessionId = ((Result.Success<String>) result).getData();
-                        callbackContext.success(sessionId != null ? sessionId : "");
-                    } else if (result instanceof Result.Failure) {
-                        ShieldError shieldError = ((Result.Failure<String>) result).getError();
-                        callbackContext.error(shieldErrorToMessage(shieldError));
-                    }
-                });
+                handleStringResult(result, callbackContext);
             }
         });
     }
@@ -337,6 +302,80 @@ public class ShieldFraudPlugin extends CordovaPlugin {
         }
 
         mainHandler.post(runnable);
+    }
+
+    private void handleStringResult(Result<String> result, CallbackContext callbackContext) {
+        runOnMainThread(() -> {
+            try {
+                if (result instanceof Result.Success) {
+                    String sessionId = ((Result.Success<String>) result).getData();
+                    callbackContext.success(sessionId != null ? sessionId : "");
+                } else if (result instanceof Result.Failure) {
+                    ShieldError shieldError = ((Result.Failure<String>) result).getError();
+                    callbackContext.error(shieldErrorToMessage(shieldError));
+                } else {
+                    callbackContext.error("Unexpected SDK result");
+                }
+            } catch (Exception exception) {
+                sendExceptionError(callbackContext, "processing SDK callback", exception);
+            }
+        });
+    }
+
+    private void sendExceptionError(
+            CallbackContext callbackContext,
+            String action,
+            Exception exception
+    ) {
+        String detail = exception.getMessage();
+        if (detail == null || detail.isEmpty()) {
+            detail = exception.getClass().getSimpleName();
+        }
+        String message = "Failed to " + action + ": " + detail;
+        runOnMainThread(() -> callbackContext.error(message));
+    }
+
+    private void handleDeviceResult(Result<DeviceIntelligence> result) {
+        runOnMainThread(() -> {
+            CallbackContext currentContext = deviceResultCallbackContext;
+            if (currentContext == null) {
+                return;
+            }
+
+            PluginResult pluginResult;
+            try {
+                if (result instanceof Result.Success) {
+                    DeviceIntelligence intelligence = ((Result.Success<DeviceIntelligence>) result).getData();
+                    JSONObject payload = intelligence != null ? intelligence.getData() : null;
+                    pluginResult = new PluginResult(
+                            PluginResult.Status.OK,
+                            payload != null ? payload : new JSONObject()
+                    );
+                } else if (result instanceof Result.Failure) {
+                    ShieldError shieldError = ((Result.Failure<DeviceIntelligence>) result).getError();
+                    pluginResult = new PluginResult(
+                            PluginResult.Status.ERROR,
+                            shieldErrorToMessage(shieldError)
+                    );
+                } else {
+                    pluginResult = new PluginResult(
+                            PluginResult.Status.ERROR,
+                            "Unexpected SDK result"
+                    );
+                }
+            } catch (Exception exception) {
+                String detail = exception.getMessage();
+                pluginResult = new PluginResult(
+                        PluginResult.Status.ERROR,
+                        detail != null && !detail.isEmpty()
+                                ? detail
+                                : exception.getClass().getSimpleName()
+                );
+            }
+
+            pluginResult.setKeepCallback(true);
+            currentContext.sendPluginResult(pluginResult);
+        });
     }
 
     private static HashMap<String, String> jsonObjectToHashMap(JSONObject jsonObject) throws JSONException {
