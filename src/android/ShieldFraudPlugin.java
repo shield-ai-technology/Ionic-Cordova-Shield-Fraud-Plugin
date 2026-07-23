@@ -32,7 +32,7 @@ import java.util.Map;
 public class ShieldFraudPlugin extends CordovaPlugin {
 
     private static Shield shieldInstance;
-    private static final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private volatile CallbackContext deviceResultCallbackContext;
 
     @Override
@@ -279,7 +279,7 @@ public class ShieldFraudPlugin extends CordovaPlugin {
         }
     }
 
-    private static String shieldErrorToMessage(@Nullable ShieldError shieldError) {
+    private String shieldErrorToMessage(@Nullable ShieldError shieldError) {
         if (shieldError == null) {
             return "Unknown error";
         }
@@ -295,7 +295,7 @@ public class ShieldFraudPlugin extends CordovaPlugin {
         return shieldError.toString();
     }
 
-    private static void runOnMainThread(Runnable runnable) {
+    private void runOnMainThread(Runnable runnable) {
         if (Looper.myLooper() == Looper.getMainLooper()) {
             runnable.run();
             return;
@@ -304,7 +304,7 @@ public class ShieldFraudPlugin extends CordovaPlugin {
         mainHandler.post(runnable);
     }
 
-    private static void handleStringResult(Result<String> result, CallbackContext callbackContext) {
+    private void handleStringResult(Result<String> result, CallbackContext callbackContext) {
         runOnMainThread(() -> {
             try {
                 if (result instanceof Result.Success) {
@@ -322,7 +322,7 @@ public class ShieldFraudPlugin extends CordovaPlugin {
         });
     }
 
-    private static void sendExceptionError(
+    private void sendExceptionError(
             CallbackContext callbackContext,
             String action,
             Exception exception
