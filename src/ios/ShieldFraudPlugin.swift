@@ -3,6 +3,7 @@ import ShieldFraud
 @objc(ShieldFraudPlugin) class ShieldFraudPlugin : CDVPlugin {
 
     private static var shieldInstance: Shield?
+    private var deviceResultCallbackId: String?
 
     private func sendPluginResult(_ pluginResult: CDVPluginResult?, callbackId: String) {
         guard let pluginResult = pluginResult else {
@@ -52,9 +53,10 @@ import ShieldFraud
         return "Failed to serialize device result: \(error.localizedDescription)"
     }
 
-    private func registerDeviceResultListener(shield: Shield, callbackId: String) {
+    private func registerDeviceResultListener(shield: Shield) {
         shield.onDeviceResult { [weak self] intelligence, error in
-            guard let self = self else {
+            guard let self = self,
+                  let callbackId = self.deviceResultCallbackId else {
                 return
             }
 
@@ -99,9 +101,9 @@ import ShieldFraud
         }
 
         let enableDeviceResultListener = payload["enableDeviceResultListener"] as? Bool ?? false
-        if let shield = ShieldFraudPlugin.shieldInstance {
+        if ShieldFraudPlugin.shieldInstance != nil {
             if enableDeviceResultListener {
-                registerDeviceResultListener(shield: shield, callbackId: command.callbackId)
+                self.deviceResultCallbackId = command.callbackId
             } else {
                 let pluginResult = CDVPluginResult(status: .ok, messageAs: true)
                 self.sendPluginResult(pluginResult, callbackId: command.callbackId)
@@ -148,7 +150,8 @@ import ShieldFraud
         ShieldFraudPlugin.shieldInstance = shield
 
         if enableDeviceResultListener {
-            registerDeviceResultListener(shield: shield, callbackId: command.callbackId)
+            self.deviceResultCallbackId = command.callbackId
+            registerDeviceResultListener(shield: shield)
         } else {
             let pluginResult = CDVPluginResult(status: .ok, messageAs: true)
             self.sendPluginResult(pluginResult, callbackId: command.callbackId)

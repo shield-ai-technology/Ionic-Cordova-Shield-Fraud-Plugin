@@ -71,32 +71,34 @@ test("uses the configured CocoaPods Git Specs source", () => {
     );
 });
 
-test("translates synchronous Android exceptions at the Cordova action boundary", () => {
-    assert.match(android, /catch \(Exception exception\)/);
-    assert.match(android, /sendExceptionError\(callbackContext, action, exception\)/);
-    assert.match(android, /if \("initShieldFraud"\.equals\(action\)\)[\s\S]*shieldInstance = null/);
-    assert.doesNotMatch(android, /catch \(Throwable/);
+test("dispatches Android actions without a boundary try-catch", () => {
+    const executeStart = android.indexOf("public boolean execute");
+    const executeEnd = android.indexOf("public void onReset");
+    const executeMethod = android.slice(executeStart, executeEnd);
+
+    assert.ok(executeStart >= 0 && executeEnd > executeStart);
+    assert.doesNotMatch(executeMethod, /\btry\b/);
+    assert.doesNotMatch(executeMethod, /\bcatch\b/);
+    assert.match(executeMethod, /return false;/);
 });
 
 test("routes Android device results to the latest Cordova callback context", () => {
-    assert.match(android, /class DeviceResultCallbackRouter implements Callback<DeviceIntelligence>/);
-    assert.match(android, /volatile CallbackContext callbackContext/);
-    assert.match(android, /deviceResultCallbackRouter\.setCallbackContext\(callbackContext\)/);
-    assert.match(android, /shieldInstance\.getLatestDeviceResult\(\)/);
-    assert.match(android, /deviceResultCallbackRouter\.replayCachedResult\(cachedResult\)/);
-    assert.match(android, /void onReset\(\)[\s\S]*deviceResultCallbackRouter\.clear\(\)/);
+    assert.doesNotMatch(android, /DeviceResultCallbackRouter/);
+    assert.match(android, /private volatile CallbackContext deviceResultCallbackContext/);
+    assert.match(android, /deviceResultCallbackContext = callbackContext/);
+    assert.match(android, /CallbackContext currentContext = deviceResultCallbackContext/);
+    assert.doesNotMatch(android, /replayCachedResult/);
+    assert.match(android, /void onReset\(\)[\s\S]*deviceResultCallbackContext = null/);
 });
 
-test("replaces the iOS listener with an immutable callback ID", () => {
-    assert.doesNotMatch(swift, /private var callbackId/);
+test("routes iOS device results to the latest saved callback ID", () => {
+    assert.match(swift, /private var deviceResultCallbackId: String\?/);
+    assert.match(swift, /registerDeviceResultListener\(shield: Shield\)/);
+    assert.match(swift, /let callbackId = self\.deviceResultCallbackId/);
+    assert.match(swift, /self\.deviceResultCallbackId = command\.callbackId/);
     assert.match(
         swift,
-        /registerDeviceResultListener\(shield: Shield, callbackId: String\)/
-    );
-    assert.match(swift, /sendPluginResult\(pluginResult, callbackId: callbackId\)/);
-    assert.match(
-        swift,
-        /if let shield = ShieldFraudPlugin\.shieldInstance[\s\S]*if enableDeviceResultListener[\s\S]*registerDeviceResultListener\(shield: shield, callbackId: command\.callbackId\)/
+        /if ShieldFraudPlugin\.shieldInstance != nil[\s\S]*if enableDeviceResultListener[\s\S]*self\.deviceResultCallbackId = command\.callbackId/
     );
 });
 
