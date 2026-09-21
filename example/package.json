@@ -1,0 +1,26 @@
+{
+  "name": "com.shieldfraud.example",
+  "displayName": "Plugin Example App",
+  "version": "1.0.0",
+  "description": "SHIELD Fraud Ionic-Cordova Plugin Example Application",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "SHIELD",
+  "license": "MIT",
+  "devDependencies": {
+    "cordova-android": "^14.0.1",
+    "cordova-ios": "^8.1.1",
+    "shield-fraud-plugin": "file:shield-fraud-plugin-2.4.1.tgz"
+  },
+  "cordova": {
+    "platforms": [
+      "android",
+      "ios"
+    ],
+    "plugins": {
+      "com.shieldfraud": {}
+    }
+  }
+}

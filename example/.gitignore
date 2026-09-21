@@ -1,0 +1,13 @@
+# Cordova build and platform artifacts
+platforms/
+plugins/
+node_modules/
+
+# Environment and sensitive keys
+.env
+*.backup
+www/js/env.js
+
+# OS files
+.DS_Store
+Thumbs.db
