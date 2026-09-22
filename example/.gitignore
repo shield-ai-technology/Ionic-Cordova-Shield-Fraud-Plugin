@@ -1,5 +1,6 @@
 # Cordova build and platform artifacts
-platforms/
+platforms/*
+!platforms/.gitkeep
 plugins/
 node_modules/
 
