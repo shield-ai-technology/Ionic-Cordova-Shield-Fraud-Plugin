@@ -5,6 +5,7 @@
   "description": "SHIELD Fraud Ionic-Cordova Plugin Example Application",
   "main": "index.js",
   "scripts": {
+    "link-plugin": "cordova plugin add ../ --link --nosave",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "SHIELD",
@@ -12,15 +13,13 @@
   "devDependencies": {
     "cordova-android": "^14.0.1",
     "cordova-ios": "^8.1.1",
-    "shield-fraud-plugin": "file:shield-fraud-plugin-2.4.1.tgz"
+    "shield-fraud-plugin": "file:.."
   },
   "cordova": {
     "platforms": [
       "android",
       "ios"
     ],
-    "plugins": {
-      "com.shieldfraud": {}
-    }
+    "plugins": {}
   }
 }

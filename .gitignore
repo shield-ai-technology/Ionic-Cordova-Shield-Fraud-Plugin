@@ -22,7 +22,8 @@
 node_modules/
 /plugins/
 /platforms/
-example/platforms/
+example/platforms/*
+!example/platforms/.gitkeep
 example/plugins/
 example/node_modules/
 .gradle/
