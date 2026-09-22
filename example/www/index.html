@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, width=device-width, viewport-fit=cover">
+    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: gap: https://ssl.gstatic.com;">
+    <title>Plugin Example App</title>
+    <link rel="stylesheet" href="css/index.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- App Bar / Header -->
+        <header class="app-bar">
+            <h1 class="app-title">Plugin Example App</h1>
+            <button id="refresh-button" class="icon-button" title="Refresh">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="23 4 23 10 17 10"></polyline>
+                    <polyline points="1 20 1 14 7 14"></polyline>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                </svg>
+            </button>
+        </header>
+
+        <!-- Main Body Content (Scrollable with Pull-to-Refresh) -->
+        <main class="content-area" id="content-area">
+            <div id="ptr-indicator" class="ptr-indicator">
+                <div class="spinner-small"></div>
+            </div>
+
+            <div id="state-loading" class="state-container loading-container">
+                <div class="spinner"></div>
+            </div>
+
+            <div id="state-error" class="state-container error-container hidden">
+                <pre id="error-text" class="error-text"></pre>
+            </div>
+
+            <div id="state-empty" class="state-container empty-container hidden">
+                <p class="empty-text">Waiting for data...</p>
+            </div>
+
+            <div id="state-success" class="state-container success-container hidden">
+                <pre id="json-text" class="json-text" tabindex="0"></pre>
+            </div>
+        </main>
+
+        <!-- Toast Notification Container -->
+        <div id="toast-container" class="toast-container hidden"></div>
+
+        <!-- Bottom Action Bar (SafeArea Aware) -->
+        <footer class="action-bar">
+            <div class="buttons-row">
+                <button id="btn-signature" class="action-btn btn-signature" type="button" onclick="showSignatureUserIdDialog()">
+                    <span class="btn-text">Send Device Signature</span>
+                </button>
+                <button id="btn-attributes" class="action-btn btn-attributes" type="button" onclick="showUserIdDialog()">
+                    <span class="btn-text">Send Device Attribute</span>
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Modal Dialog: Enter User ID (Signature / Optional) -->
+    <div id="modal-signature-userid" class="dialog-backdrop hidden">
+        <div class="dialog-box">
+            <h2 class="dialog-title">Enter User ID</h2>
+            <div class="dialog-content">
+                <input type="text" id="input-signature-userid" class="dialog-input" placeholder="Optional user_id" autocapitalize="none" autocomplete="off" />
+            </div>
+            <div class="dialog-actions">
+                <button id="btn-cancel-signature" class="dialog-btn text-btn" type="button" onclick="hideSignatureUserIdDialog()">Cancel</button>
+                <button id="btn-send-signature" class="dialog-btn elevated-btn" type="button" onclick="submitSignatureUserId()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Dialog: Enter User ID (Attributes / Required) -->
+    <div id="modal-attributes-userid" class="dialog-backdrop hidden">
+        <div class="dialog-box">
+            <h2 class="dialog-title">Enter User ID</h2>
+            <div class="dialog-content">
+                <input type="text" id="input-attributes-userid" class="dialog-input" placeholder="Enter userid" autocapitalize="none" autocomplete="off" />
+            </div>
+            <div class="dialog-actions">
+                <button id="btn-cancel-attributes" class="dialog-btn text-btn" type="button" onclick="hideUserIdDialog()">Cancel</button>
+                <button id="btn-send-attributes" class="dialog-btn elevated-btn" type="button" onclick="submitUserIdAttributes()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="cordova.js"></script>
+    <script src="js/env.js"></script>
+    <script src="js/index.js"></script>
+</body>
+</html>

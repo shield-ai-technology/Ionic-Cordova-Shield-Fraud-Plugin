@@ -1,0 +1,358 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+:root {
+    --primary-color: #012856;
+    --signature-btn-color: #FFD040;
+    --attributes-btn-color: #3CB4E4;
+    --text-color: #1c1b1f;
+    --error-color: #d32f2f;
+    --background-color: #ffffff;
+    --dialog-bg: #f3edf7;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    overflow: hidden;
+    user-select: text;
+    -webkit-user-select: text;
+}
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+}
+
+/* App Bar / Header */
+.app-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--primary-color);
+    color: #ffffff;
+    padding: calc(env(safe-area-inset-top, 0px) + 12px) 16px 12px 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    z-index: 10;
+}
+
+.app-title {
+    font-size: 20px;
+    font-weight: 500;
+    color: #ffffff;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.icon-button {
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+
+.icon-button:active {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Content Area */
+.content-area {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 12px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.state-container {
+    width: 100%;
+    min-height: 200px;
+}
+
+.loading-container {
+    display: flex;
+    justify-content: center;
+    padding-top: 40px;
+}
+
+.error-container {
+    padding: 8px 0;
+}
+
+.error-text {
+    color: var(--error-color);
+    font-family: monospace;
+    font-size: 14px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    user-select: text;
+    -webkit-user-select: text;
+}
+
+.empty-container {
+    padding-top: 20px;
+}
+
+.empty-text {
+    color: #555555;
+    font-size: 15px;
+}
+
+.success-container {
+    padding: 4px 0;
+}
+
+.json-text {
+    font-family: "SF Mono", Menlo, Monaco, Consolas, "Courier New", monospace;
+    font-size: 13px;
+    line-height: 1.45;
+    white-space: pre-wrap;
+    word-break: break-all;
+    color: #111111;
+    user-select: text;
+    -webkit-user-select: text;
+    outline: none;
+}
+
+/* Material Circular Progress Indicator */
+.spinner {
+    width: 36px;
+    height: 36px;
+    border: 3.5px solid rgba(1, 40, 86, 0.2);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+.spinner-small {
+    width: 20px;
+    height: 20px;
+    border: 2.5px solid rgba(1, 40, 86, 0.2);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.ptr-indicator {
+    display: none;
+    justify-content: center;
+    padding: 8px 0;
+}
+
+.ptr-indicator.active {
+    display: flex;
+}
+
+/* Action Bar & Buttons */
+.action-bar {
+    padding: 0 16px calc(env(safe-area-inset-bottom, 0px) + 16px) 16px;
+    background-color: var(--background-color);
+}
+
+.buttons-row {
+    display: flex;
+    gap: 5px;
+    width: 100%;
+}
+
+.action-btn {
+    flex: 1;
+    height: 48px;
+    border: none;
+    border-radius: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    font-size: 13px;
+    color: #000000;
+    padding: 0 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    transition: opacity 0.2s, transform 0.1s;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.action-btn:active {
+    opacity: 0.85;
+    transform: scale(0.98);
+}
+
+.action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-signature {
+    background-color: var(--signature-btn-color);
+}
+
+.btn-attributes {
+    background-color: var(--attributes-btn-color);
+}
+
+.btn-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Modal Dialogs */
+.dialog-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 24px;
+}
+
+.dialog-box {
+    background-color: #ffffff;
+    border-radius: 28px;
+    padding: 24px;
+    width: 100%;
+    max-width: 320px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+}
+
+.dialog-title {
+    font-size: 20px;
+    font-weight: 500;
+    color: #1c1b1f;
+    margin-bottom: 16px;
+}
+
+.dialog-content {
+    margin-bottom: 20px;
+}
+
+.dialog-input {
+    width: 100%;
+    padding: 12px 0 8px 0;
+    font-size: 16px;
+    border: none;
+    border-bottom: 1.5px solid #79747e;
+    outline: none;
+    background: transparent;
+    color: #1c1b1f;
+    border-radius: 0;
+}
+
+.dialog-input:focus {
+    border-bottom-color: var(--primary-color);
+    border-bottom-width: 2px;
+}
+
+.dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.dialog-btn {
+    border: none;
+    border-radius: 20px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.text-btn {
+    background: transparent;
+    color: var(--primary-color);
+}
+
+.text-btn:active {
+    background-color: rgba(1, 40, 86, 0.08);
+}
+
+.elevated-btn {
+    background-color: var(--primary-color);
+    color: #ffffff;
+}
+
+.elevated-btn:active {
+    background-color: #011d40;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Toast / Snackbar Notification */
+.toast-container {
+    position: fixed;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 76px);
+    left: 50%;
+    transform: translateX(-50%) translateY(0);
+    background-color: #323232;
+    color: #ffffff;
+    padding: 12px 20px;
+    border-radius: 24px;
+    font-size: 14px;
+    font-weight: 500;
+    max-width: 90%;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+    z-index: 200;
+    text-align: center;
+    word-break: break-word;
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    opacity: 1;
+}
+
+.toast-container.toast-success {
+    background-color: #1b5e20;
+}
+
+.toast-container.toast-error {
+    background-color: #b71c1c;
+}
+
+.toast-container.toast-info {
+    background-color: #012856;
+}
+
+.toast-container.hidden {
+    opacity: 0;
+    transform: translateX(-50%) translateY(12px);
+    pointer-events: none;
+    display: none !important;
+}
+
