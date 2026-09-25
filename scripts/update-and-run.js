@@ -268,7 +268,8 @@ function syncPluginWithExampleApp(examplePath, pluginRootDir, options = {}) {
     } catch (e) {
         console.warn('[Sync] cordova prepare returned warning/error, attempting plugin re-add:', e.message);
         try {
-            execSync(`cordova plugin add "${pluginRootDir}"`, { cwd: examplePath, stdio: 'pipe' });
+            // --link avoids copying the plugin root, which contains example/ and would recurse
+            execSync(`cordova plugin add "${pluginRootDir}" --link --nosave`, { cwd: examplePath, stdio: 'pipe' });
             execSync('cordova prepare', { cwd: examplePath, stdio: 'pipe' });
         } catch (addErr) {
             console.error('[Sync] Failed to re-add plugin:', addErr.message);

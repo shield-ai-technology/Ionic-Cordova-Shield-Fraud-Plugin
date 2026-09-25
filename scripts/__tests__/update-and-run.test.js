@@ -185,7 +185,7 @@ dependencies {
             const pluginXmlFile = path.join(tmpDir, 'plugin.xml');
             fs.writeFileSync(pluginXmlFile, `
 <?xml version="1.0" encoding="UTF-8"?>
-<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0" id="com.shieldfraud" version="2.4.1">
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0" id="com.shieldfraud" version="2.5.0">
    <platform name="ios">
       <podspec>
          <pods use-frameworks="true">

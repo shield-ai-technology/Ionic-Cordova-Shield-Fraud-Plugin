@@ -2,5 +2,5 @@ platform :ios, '12.0'
 
 target 'ShieldFraudPlugin' do
     use_frameworks!
-    pod 'ShieldFraud', '2.0.0'
+    pod 'ShieldFraud', '2.1.0'
 end
