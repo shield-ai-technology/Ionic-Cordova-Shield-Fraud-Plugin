@@ -1,7 +1,7 @@
 {
   "name": "shield-fraud-plugin",
   "displayName": "ShieldFraudPlugin",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "main": "www/js/ShieldFraudPlugin.js",
   "files": [
     "plugin.xml",
