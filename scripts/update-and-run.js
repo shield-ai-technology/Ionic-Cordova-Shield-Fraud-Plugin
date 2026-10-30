@@ -261,20 +261,19 @@ function syncPluginWithExampleApp(examplePath, pluginRootDir, options = {}) {
         }
     }
 
+    // Always re-install the plugin: cordova prepare does not refresh the plugin JS copied
+    // into platforms/*/platform_www, nor the iOS pods.json/Podfile generated from plugin.xml.
     try {
-        // Run cordova prepare
-        execSync('cordova prepare', { cwd: examplePath, stdio: 'pipe' });
-        console.log('[Sync] cordova prepare completed successfully');
+        execSync('cordova plugin rm com.shieldfraud --nosave', { cwd: examplePath, stdio: 'pipe' });
+        console.log('[Sync] Removed existing plugin from example app');
     } catch (e) {
-        console.warn('[Sync] cordova prepare returned warning/error, attempting plugin re-add:', e.message);
-        try {
-            // --link avoids copying the plugin root, which contains example/ and would recurse
-            execSync(`cordova plugin add "${pluginRootDir}" --link --nosave`, { cwd: examplePath, stdio: 'pipe' });
-            execSync('cordova prepare', { cwd: examplePath, stdio: 'pipe' });
-        } catch (addErr) {
-            console.error('[Sync] Failed to re-add plugin:', addErr.message);
-        }
+        console.warn('[Sync] Plugin not removed (may not be installed yet):', e.message);
     }
+
+    // --link avoids copying the plugin root, which contains example/ and would recurse
+    execSync(`cordova plugin add "${pluginRootDir}" --link --nosave`, { cwd: examplePath, stdio: 'inherit' });
+    execSync('cordova prepare', { cwd: examplePath, stdio: 'pipe' });
+    console.log('[Sync] Plugin re-added and cordova prepare completed successfully');
 }
 
 /**
@@ -315,22 +314,33 @@ function injectCredentialsAndInit(examplePath, siteId, secretKey, options = {}) 
             return;
         }
 
-        var config = {
-            siteID: ${safeSiteId},
-            secretKey: ${safeSecretKey},
-            environment: 0,
-            logLevel: 2,
-            needBackgroundListener: true
-        };
+        // Fallback only: let the app initialize the SDK itself so its device result
+        // listener is not replaced (the plugin keeps a single listener).
+        setTimeout(function() {
+            window.ShieldFraudPlugin.isShieldInitialized(function(alreadyInit) {
+                if (alreadyInit) {
+                    console.log('[SHIELD_VERIFICATION] SDK already initialized by app, skipping auto-init');
+                    return;
+                }
 
-        window.ShieldFraudPlugin.initShieldFraud(config, {
-            onSuccess: function(result) {
-                console.log('[SHIELD_VERIFICATION] initShieldFraud onSuccess: ' + JSON.stringify(result));
-            },
-            onFailure: function(error) {
-                console.log('[SHIELD_VERIFICATION] initShieldFraud onFailure: ' + JSON.stringify(error));
-            }
-        });
+                var config = {
+                    siteID: ${safeSiteId},
+                    secretKey: ${safeSecretKey},
+                    environment: 0,
+                    logLevel: 2,
+                    needBackgroundListener: true
+                };
+
+                window.ShieldFraudPlugin.initShieldFraud(config, {
+                    onSuccess: function(result) {
+                        console.log('[SHIELD_VERIFICATION] initShieldFraud onSuccess: ' + JSON.stringify(result));
+                    },
+                    onFailure: function(error) {
+                        console.log('[SHIELD_VERIFICATION] initShieldFraud onFailure: ' + JSON.stringify(error));
+                    }
+                });
+            });
+        }, 2000);
 
         // Request Session ID
         function pollSessionId(attempts) {

@@ -134,29 +134,31 @@
                 }
             }, 15000);
 
+            function buildConfig() {
+                var siteId = (window.SHIELD_ENV && window.SHIELD_ENV.SHIELD_SITE_ID) || window.SHIELD_SITE_ID || "SITE_ID";
+                var secretKey = (window.SHIELD_ENV && window.SHIELD_ENV.SHIELD_SECRET_KEY) || window.SHIELD_SECRET_KEY || "SECRET_KEY";
+
+                return {
+                    siteID: siteId,
+                    secretKey: secretKey,
+                    environment: (window.ShieldFraudPlugin.Environment && window.ShieldFraudPlugin.Environment.PROD !== undefined) ? window.ShieldFraudPlugin.Environment.PROD : 0,
+                    logLevel: (window.ShieldFraudPlugin.LogLevel && window.ShieldFraudPlugin.LogLevel.VERBOSE !== undefined) ? window.ShieldFraudPlugin.LogLevel.VERBOSE : 3,
+                    blockScreenRecording: true,
+                    blockedDialog: {
+                        title: "Access Blocked",
+                        body: "This device does not meet the required security checks."
+                    },
+                    partnerId: "2444666666",
+                    needBackgroundListener: true
+                };
+            }
+
             window.ShieldFraudPlugin.isShieldInitialized(function (alreadyInit) {
                 if (!alreadyInit) {
-                    var siteId = (window.SHIELD_ENV && window.SHIELD_ENV.SHIELD_SITE_ID) || window.SHIELD_SITE_ID || "SITE_ID";
-                    var secretKey = (window.SHIELD_ENV && window.SHIELD_ENV.SHIELD_SECRET_KEY) || window.SHIELD_SECRET_KEY || "SECRET_KEY";
-
-                    var config = {
-                        siteID: siteId,
-                        secretKey: secretKey,
-                        environment: (window.ShieldFraudPlugin.Environment && window.ShieldFraudPlugin.Environment.PROD !== undefined) ? window.ShieldFraudPlugin.Environment.PROD : 0,
-                        logLevel: (window.ShieldFraudPlugin.LogLevel && window.ShieldFraudPlugin.LogLevel.VERBOSE !== undefined) ? window.ShieldFraudPlugin.LogLevel.VERBOSE : 3,
-                        blockScreenRecording: true,
-                        blockedDialog: {
-                            title: "Access Blocked",
-                            body: "This device does not meet the required security checks."
-                        },
-                        partnerId: "2444666666",
-                        needBackgroundListener: true
-                    };
-
-                    window.ShieldFraudPlugin.initShieldFraud(config, shieldCallback);
+                    window.ShieldFraudPlugin.initShieldFraud(buildConfig(), shieldCallback);
                 } else {
-                    clearTimeout(initTimeout);
                     window.ShieldFraudPlugin.getDeviceResult(function (latest) {
+                        clearTimeout(initTimeout);
                         if (latest) {
                             var parsed = (typeof latest === "string") ? (function () {
                                 try { return JSON.parse(latest); } catch (e) { return latest; }
@@ -170,33 +172,16 @@
                         state.isLoading = false;
                         render();
                     }, function (err) {
-                        var errObj = err || {};
-                        var code = errObj.code !== undefined ? errObj.code : "";
-                        var msg = errObj.message || (typeof err === "string" ? err : "Error fetching latest result");
-                        state.errorMessage = code ? (code + " : " + msg) : msg;
-                        state.isLoading = false;
-                        render();
+                        // SDK was initialized elsewhere but its first result has not arrived yet:
+                        // register our listener on the existing instance and wait for it.
+                        log("No device result yet (" + (err && err.message || err) + "), waiting for device result listener.");
+                        window.ShieldFraudPlugin.initShieldFraud(buildConfig(), shieldCallback);
                     });
                 }
             }, function (checkErr) {
                 log("isShieldInitialized error: " + JSON.stringify(checkErr));
                 // Fallback to init
-                var siteId = (window.SHIELD_ENV && window.SHIELD_ENV.SHIELD_SITE_ID) || window.SHIELD_SITE_ID || "SITE_ID";
-                var secretKey = (window.SHIELD_ENV && window.SHIELD_ENV.SHIELD_SECRET_KEY) || window.SHIELD_SECRET_KEY || "SECRET_KEY";
-                var config = {
-                    siteID: siteId,
-                    secretKey: secretKey,
-                    environment: 0,
-                    logLevel: 3,
-                    blockScreenRecording: true,
-                    blockedDialog: {
-                        title: "Access Blocked",
-                        body: "This device does not meet the required security checks."
-                    },
-                    partnerId: "2444666666",
-                    needBackgroundListener: true
-                };
-                window.ShieldFraudPlugin.initShieldFraud(config, shieldCallback);
+                window.ShieldFraudPlugin.initShieldFraud(buildConfig(), shieldCallback);
             });
         } catch (e) {
             log("Init Exception: " + e.message);
